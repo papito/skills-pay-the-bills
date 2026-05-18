@@ -10,7 +10,13 @@ CLAUDE_SKILLS_DIR ?= $(HOME)/.claude/skills
 CLAUDE_ALT_SKILLS_DIR ?= $(HOME)/.config/claude/skills
 CLAUDE_NAMESPACE ?= skills-pay-the-bills
 
-RSYNC_MD_FILTER := -a --include='*.md' --include='*/' --exclude='*'
+#-a                 archive: preserve permissions, timestamps, symlinks, recurse
+#--delete           remove files in DEST that no longer exist in source
+#--include='*.md'   copy .md files
+#--include='*/'     descend into subdirectories
+#--exclude='*'      skip everything else
+rsync -a --delete --include='*.md' --include
+RSYNC_MD_FILTER := -a --delete --include='*.md' --include='*/' --exclude='*'
 
 
 .PHONY: deploy-copilot deploy-claude deploy-all
