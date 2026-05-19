@@ -15,7 +15,6 @@ CLAUDE_NAMESPACE ?= skills-pay-the-bills
 #--include='*.md'   copy .md files
 #--include='*/'     descend into subdirectories
 #--exclude='*'      skip everything else
-rsync -a --delete --include='*.md' --include
 RSYNC_MD_FILTER := -a --delete --include='*.md' --include='*/' --exclude='*'
 
 
