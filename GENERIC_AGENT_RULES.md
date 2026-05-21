@@ -12,12 +12,32 @@ If the pipeline components get added, removed, or moved around, update the ARCHI
 
 ### Code Style and Quality
 
+#### Scala/Python/Go/JavaSript
 Analyze surrounding comments when adding new features or updating existing code – update the comments if necessary.
 
 Factor our code into functions if there are two or more similar instances of logic.
 
-Write as little code as possible while maintaing clarity and readability. In the case of CSS, this is especially true. Solve the core problem with the least number of new properties and make no assumptions about what the user wants (color, padding, etc.)
+Write as little code as possible while maintaining clarity and readability. 
 
-Analyze surrounding comments and fix them if necessary.
+Do not redundantly comment obvious code but always comment code that's complex (for example, long functional one-liners) or logic that may be deemed non-trivial by someone less experienced.
 
-Do not redundantly comment obvious code but always comment code that's complex (for example, long functional one-liners)
+### CSS/HTML
+
+Solve the core task with the least number of properties and as little markup as needed. 
+
+Make no assumptions about what the user wants (color, padding, etc.)
+
+Heavily prefer CSS Grid and Flexbox over floats and positioning.
+
+Identify the main CSS file and use :root variables if an additional value is needed for a task: 
+
+```css
+:root {
+    color-scheme: light dark;
+
+    --background-color: #363636;
+    --background-form-color: #363535;
+    --background-secondary-color: rgb(56, 56, 65);
+    --background-tertiary-color: rgb(75, 75, 87);
+}
+```
