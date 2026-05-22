@@ -1,52 +1,60 @@
-# skills-pay-the-bills deployment
+# skills-pay-the-bills
 
-This repo treats `plan/` as the source of truth for skills content.
+Repository of agent skills, organized by domain:
+- `maintain/`
+- `plan/`
+- `review/`
 
-The Makefile supports:
-- org-level GitHub Copilot deployment via direct push
-- local Claude Code sync to `./.claude/skills`
+## Skills Table of Contents
 
-## Prerequisites
+### maintain
+- [`update-agent-instructions`](maintain/update-agent-instructions/SKILL.md) - Update root agent-instruction files (such as `AGENTS.md`/`CLAUDE.md`) with minimal, codebase-aligned changes.
 
-- `git`
+### plan
+- [`grill-me`](plan/grill-me/SKILL.md) - Stress-test a plan against project language/domain decisions and produce a refined implementation plan.
+
+### review
+- [`check-my-pr`](review/check-my-pr/SKILL.md) - Review current branch changes in context and report issues by severity.
+- [`quiz-me-on-your-code`](review/quiz-me-on-your-code/SKILL.md) - Quiz the user on recently written/modified code to verify understanding.
+
+## Deployment
+
+The `Makefile` syncs markdown skills (`*.md`) from `SKILLS_SRC` into local Copilot and Claude skill folders.
+
+### Prerequisites
+- `make`
 - `rsync`
-- a checked-out org Copilot repo on your machine
 
-## Configuration
+### Configuration
 
-Defaults are defined in `Makefile`, and can be overridden per command:
-
+Defaults are defined in `Makefile` and can be overridden per command:
 - `SKILLS_SRC` (default: `plan`)
-- `COPILOT_REPO_DIR` (default: `../copilot-skills-org`)
-- `COPILOT_TARGET_SUBDIR` (default: `skills/skills-pay-the-bills`)
-- `CLAUDE_DIR` (default: `./.claude`)
-- `CLAUDE_TARGET_SUBDIR` (default: `skills`)
-- `DEFAULT_BRANCH` (default: `main`)
+- `COPILOT_SKILLS_DIR` (default: `$HOME/.copilot/skills`)
+- `COPILOT_NAMESPACE` (default: `skills-pay-the-bills`)
+- `COPILOT_TARGET_DIR` (default: `$COPILOT_SKILLS_DIR/$COPILOT_NAMESPACE`)
+- `CLAUDE_SKILLS_DIR` (default: `$HOME/.claude/skills`)
+- `CLAUDE_ALT_SKILLS_DIR` (default: `$HOME/.config/claude/skills`)
+- `CLAUDE_NAMESPACE` (default: `skills-pay-the-bills`)
 
-## Common commands
+### Commands
 
 ```bash
-make test
-make deploy-claude
 make deploy-copilot
+make deploy-claude
 make deploy-all
 ```
 
-## Example with explicit org repo path
+### Examples
+
+Deploy `review/` skills only:
 
 ```bash
-make deploy-copilot COPILOT_REPO_DIR="$HOME/work/org-copilot-skills" DEFAULT_BRANCH="main"
+make deploy-all SKILLS_SRC="review"
 ```
 
-## What each deploy does
-
-- `deploy-claude`: syncs `plan/` into `./.claude/skills/`.
-- `deploy-copilot`: syncs `plan/` into the configured subfolder in your org Copilot repo, then commits and pushes directly if there are changes.
-
-## Dry-run options
+Deploy `maintain/` skills only:
 
 ```bash
-make dry-run-claude
-make dry-run-copilot COPILOT_REPO_DIR="$HOME/work/org-copilot-skills"
+make deploy-all SKILLS_SRC="maintain"
 ```
 
