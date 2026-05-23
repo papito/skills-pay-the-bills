@@ -1,6 +1,6 @@
 SHELL := /bin/sh
 
-SKILLS_SRC ?= plan
+SKILLS_SRC ?= skills
 
 COPILOT_SKILLS_DIR ?= $(HOME)/.copilot/skills
 COPILOT_NAMESPACE ?= skills-pay-the-bills

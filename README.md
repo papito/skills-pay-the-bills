@@ -8,14 +8,14 @@ Repository of agent skills, organized by domain:
 ## Skills Table of Contents
 
 ### maintain
-- [`update-agent-instructions`](maintain/update-agent-instructions/SKILL.md) - Update root agent-instruction files (such as `AGENTS.md`/`CLAUDE.md`) with minimal, codebase-aligned changes.
+- [`update-agent-instructions`](skills/maintain/update-agent-instructions/SKILL.md) - Update root agent-instruction files (such as `AGENTS.md`/`CLAUDE.md`) with minimal, codebase-aligned changes.
 
 ### plan
-- [`grill-me`](plan/grill-me/SKILL.md) - Stress-test a plan against project language/domain decisions and produce a refined implementation plan.
+- [`grill-me`](skills/plan/grill-me/SKILL.md) - Stress-test a plan against project language/domain decisions and produce a refined implementation plan.
 
 ### review
-- [`check-my-pr`](review/check-my-pr/SKILL.md) - Review current branch changes in context and report issues by severity.
-- [`quiz-me-on-your-code`](review/quiz-me-on-your-code/SKILL.md) - Quiz the user on recently written/modified code to verify understanding.
+- [`check-my-pr`](skills/review/check-my-pr/SKILL.md) - Review current branch changes in context and report issues by severity.
+- [`quiz-me-on-your-code`](skills/review/quiz-me-on-your-code/SKILL.md) - Quiz the user on recently written/modified code to verify understanding.
 
 ## Deployment
 
