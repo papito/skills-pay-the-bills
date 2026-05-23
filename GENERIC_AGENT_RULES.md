@@ -8,7 +8,7 @@ Always inspect surrounding code comments when adding new features or updating ex
 
 Do not comment on code where the information is highly redundant. Always comment on code that's complex and may be hard to follow (for example, long functional one-liners).
 
-Run "make lint" after a "make test" in order to check for formatting and style issues.
+Run "make lint" after a "make test" to check for formatting and style issues.
 
 ### Code Style and Quality
 
@@ -23,7 +23,7 @@ Write as little code as possible while maintaining clarity and readability.
 
 Use the least number of properties and as little markup as needed to address a task.
 
-Make no assumptions about what the user prefers in terms of aesthetics (color, padding, etc.). If not sure - leave it at defaults.
+Make no assumptions about what the user prefers in terms of aesthetics (color, padding, etc.).
 
 Heavily prefer CSS Grid and Flexbox over floats, positioning, and tables.
 

@@ -9,7 +9,7 @@ description: Review branch changes and provide a list of issues to be fixed.
 3. Number all discovered issues and break them down by category: SEVERE, MEDIUM, MINOR.
 4. Ask the user to provide the list of issues to be fixed. You will then create a plan for fixing those.
 
-The outpit should be a list of issies to fix, as a table
+The output should be a list of issues to fix, as a table:
 
 #  | Severity | File | Location | Issue
 
