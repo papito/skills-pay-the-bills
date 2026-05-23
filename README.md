@@ -28,7 +28,7 @@ The `Makefile` syncs markdown skills (`*.md`) from `SKILLS_SRC` into local Copil
 ### Configuration
 
 Defaults are defined in `Makefile` and can be overridden per command:
-- `SKILLS_SRC` (default: `plan`)
+- `SKILLS_SRC` (default: `skills`)
 - `COPILOT_SKILLS_DIR` (default: `$HOME/.copilot/skills`)
 - `COPILOT_NAMESPACE` (default: `skills-pay-the-bills`)
 - `COPILOT_TARGET_DIR` (default: `$COPILOT_SKILLS_DIR/$COPILOT_NAMESPACE`)
@@ -57,4 +57,3 @@ Deploy `maintain/` skills only:
 ```bash
 make deploy-all SKILLS_SRC="maintain"
 ```
-
