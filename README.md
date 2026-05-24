@@ -19,7 +19,7 @@ Repository of agent skills, organized by domain:
 
 ## Deployment
 
-The `Makefile` syncs markdown skills (`*.md`) from `SKILLS_SRC` into local Copilot and Claude skill folders.
+The `Makefile` syncs markdown skills (`*.md`) from `SKILLS_SRC` into local Copilot, Claude, and Codex skill folders.
 
 ### Prerequisites
 - `make`
@@ -35,12 +35,17 @@ Defaults are defined in `Makefile` and can be overridden per command:
 - `CLAUDE_SKILLS_DIR` (default: `$HOME/.claude/skills`)
 - `CLAUDE_ALT_SKILLS_DIR` (default: `$HOME/.config/claude/skills`)
 - `CLAUDE_NAMESPACE` (default: `skills-pay-the-bills`)
+- `CODEX_HOME` (default: `$HOME/.codex`)
+- `CODEX_SKILLS_DIR` (default: `$CODEX_HOME/skills`)
+- `CODEX_NAMESPACE` (default: `skills-pay-the-bills`)
+- `CODEX_TARGET_DIR` (default: `$CODEX_SKILLS_DIR/$CODEX_NAMESPACE`)
 
 ### Commands
 
 ```bash
 make deploy-copilot
 make deploy-claude
+make deploy-codex
 make deploy-all
 ```
 
@@ -49,11 +54,11 @@ make deploy-all
 Deploy `review/` skills only:
 
 ```bash
-make deploy-all SKILLS_SRC="review"
+make deploy-all SKILLS_SRC="skills/review"
 ```
 
 Deploy `maintain/` skills only:
 
 ```bash
-make deploy-all SKILLS_SRC="maintain"
+make deploy-all SKILLS_SRC="skills/maintain"
 ```
