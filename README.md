@@ -20,6 +20,7 @@ Repository of agent skills, organized by domain:
 ## Deployment
 
 The `Makefile` syncs markdown skills (`*.md`) from `SKILLS_SRC` into local Copilot, Claude, and Codex skill folders.
+Copilot and Claude keep the source directory shape under a namespace. Codex flattens skills so each skill directory is a direct child of the Codex skills directory.
 
 ### Prerequisites
 - `make`
@@ -38,7 +39,8 @@ Defaults are defined in `Makefile` and can be overridden per command:
 - `CODEX_HOME` (default: `$HOME/.codex`)
 - `CODEX_SKILLS_DIR` (default: `$CODEX_HOME/skills`)
 - `CODEX_NAMESPACE` (default: `skills-pay-the-bills`)
-- `CODEX_TARGET_DIR` (default: `$CODEX_SKILLS_DIR/$CODEX_NAMESPACE`)
+- `CODEX_TARGET_DIR` (default: `$CODEX_SKILLS_DIR`)
+- `CODEX_MANIFEST` (default: `$CODEX_TARGET_DIR/.$CODEX_NAMESPACE-manifest`)
 
 ### Commands
 
