@@ -18,6 +18,8 @@ After all questions are answered, determine the smallest possible set of changes
 The changes need to be grouped into logical units that can be easily reviewed and merged. For each unit of work, provide a concise description of the change and its rationale. Use a numbered list to list the changes
 so that they can be easily referenced in the future.
 
+Order the tasks into a directed acyclic graph, so that sub-agents could implement these in parallel. 
+
 The resulting plan should start with the original goals of the larger task.
 
 </what-to-do>
