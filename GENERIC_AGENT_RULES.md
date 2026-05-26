@@ -2,30 +2,29 @@
 
 ### General notes
 
-Avoid document rot: always update AGENTS.md, CLAUDE.md, and ARCHITECTURE.md – if any of those exist – if the related code is being changed, removed, or added.
+Avoid documentation drift. When related code is added, changed, or removed, update AGENTS.md, CLAUDE.md, and ARCHITECTURE.md if they exist.
 
-Always inspect surrounding code comments when adding new features or updating existing ones – update if necessary.
+When adding features or modifying existing behavior, review nearby code comments and update them where needed.
 
-Do not comment on code where the information is highly redundant. Always comment on code that's complex and may be hard to follow (for example, long functional one-liners).
+Avoid comments that merely restate the code. Add comments when they clarify complex or non-obvious logic, such as dense functional one-liners.
 
-Run "make lint" after a "make test" to check for formatting and style issues.
+After running make test, run make lint to catch formatting and style issues.
 
-### Code Style and Quality
+Code Style and Quality
 
-#### Server-side
+### Server-side
 
-Factor our code into functions if there are two or more similar instances of logic.
+Extract shared logic into functions when the same or similar logic appears more than once.
 
-Write as little code as possible while maintaining clarity and readability. 
-
+Write the smallest amount of code that preserves clarity, readability, and maintainability.
 
 ### Front-end
 
-Use the least number of properties and as little markup as needed to address a task.
+Use the fewest props and the least markup needed to accomplish the task.
 
-Make no assumptions about what the user prefers in terms of aesthetics (color, padding, etc.).
+Do not assume aesthetic preferences such as color, spacing, or padding unless they are specified.
 
-Heavily prefer CSS Grid and Flexbox over floats, positioning, and tables.
+Strongly prefer CSS Grid and Flexbox over floats, manual positioning, or table-based layouts.
 
 Identify the main CSS file and use :root variables. Example: 
 
