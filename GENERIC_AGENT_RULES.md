@@ -1,6 +1,4 @@
-## Important!
-
-### General notes
+## General notes
 
 Avoid documentation drift. When related code is added, changed, or removed, update AGENTS.md, CLAUDE.md, and ARCHITECTURE.md if they exist.
 
@@ -10,7 +8,7 @@ Avoid comments that merely restate the code. Add comments when they clarify comp
 
 After running make test, run make lint to catch formatting and style issues.
 
-Code Style and Quality
+## Code Style and Quality
 
 ### Server-side
 
