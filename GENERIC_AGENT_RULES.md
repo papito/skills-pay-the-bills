@@ -4,7 +4,10 @@ Avoid documentation drift. When related code is added, changed, or removed, upda
 
 When adding features or modifying existing behavior, review nearby code comments and update them where needed.
 
-Avoid comments that merely restate the code. Add comments when they clarify complex or non-obvious logic, such as dense functional one-liners.
+Always add comments for less than trivial logic, unless the comment is redundant with the code, and it's a simple getter/setter or similar. 
+If you find yourself writing a comment that starts with "This is needed because..." or "This exists to work around...", consider whether the code can be refactored to eliminate the need for the comment.
+
+Always log on INFO important events and log on DEBUG events that may be useful for debugging. Avoid logging on DEBUG events that are too noisy to be useful (use TRACE if available).
 
 After running make test, run make lint to catch formatting and style issues.
 
