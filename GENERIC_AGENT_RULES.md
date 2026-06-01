@@ -17,7 +17,9 @@ After running make test, run make lint to catch formatting and style issues.
 
 Extract shared logic into functions when the same or similar logic appears more than once.
 
-Write the smallest amount of code that preserves clarity, readability, and maintainability.
+Write the minimal amount of code that preserves clarity, readability, and maintainability.
+
+"Minimal" does NOT mean that you should leave dead or redundant code after changes and refactoring.
 
 ### Front-end
 
