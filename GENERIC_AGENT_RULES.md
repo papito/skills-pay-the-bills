@@ -15,6 +15,8 @@ After running make test, run make lint to catch formatting and style issues.
 
 ### Server-side
 
+Use test-driven Development with strict red-green-refactor cycle using integration tests. Do not trigger TDD for documentation-only, configuration-only changes, or front-end-facing code.
+
 Extract shared logic into functions when the same or similar logic appears more than once.
 
 Write the minimal amount of code that preserves clarity, readability, and maintainability.
