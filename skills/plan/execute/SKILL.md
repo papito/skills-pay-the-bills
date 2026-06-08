@@ -1,5 +1,5 @@
 ---
-name: execute
+name: execute-plan
 description: Execute a previously planned plan.
 ---
 
