@@ -15,10 +15,11 @@ The outcome of this exercise is a new plan – NOT code. The plan should be save
 Create the directory if it does not exist.
 
 After all questions are answered, determine the smallest possible set of changes that can be made to the codebase to bring the plan into alignment with the domain model and the project's language.
-The changes need to be grouped into logical units that can be easily reviewed and merged. For each unit of work, provide a concise description of the change and its rationale. Use a numbered list to list the changes
-so that they can be easily referenced in the future.
+The tasks in the task list need to be grouped into logical units that can be easily reviewed and merged. 
 
-Order the tasks into a directed acyclic graph, so that sub-agents could implement these in parallel. 
+For each of the tasks, provide a concise description of the change and its rationale. 
+
+Use a numbered list to list the changes so that they can be easily referenced in the future.
 
 The resulting plan should start with the original goals of the larger task.
 
