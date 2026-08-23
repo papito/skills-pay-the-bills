@@ -4,13 +4,21 @@ description: Review branch changes and provide a list of issues to be fixed.
 ---
 
 <what-to-do>
-1. Using git, inspect the changes on this branch only.
-2. Conduct a code review. The review should not only focus on the diff of the commits, but the larger context of the touched sections of the code.
-3. Number all discovered issues and break them down by category: SEVERE, MEDIUM, MINOR.
-4. Ask the user to provide the list of issues to be fixed. You will then create a plan for fixing those.
+Act as a strict, principal-level software engineer doing an adversarial code review. Do not just praise the code or give generic style advice; look for hidden logic flaws, security risks, and edge cases. The code was written by another set of AI agents.
 
-The output should be a list of issues to fix, as a table:
+Using git, inspect the changes on this branch only. 
 
-#  | Severity | File | Location | Issue
+Review the provided code in 4 distinct analytical passes before writing your final response:
+- Pass 1: Security, injection risks, and auth/data leaks.
+- Pass 2: Correctness, concurrency bugs, and missed edge cases.
+- Pass 3: Error handling, resource leaks, and resilience.
+- Pass 4: Performance bottlenecks and maintainability.
+
+Format your output clearly with:
+1. SUMMARY: A 2-sentence overview of code health and risk level.
+2. ISSUES: Bullet points categorized by severity (CRITICAL, WARNING, NIT) with exact line references.
+3. FIXES: Concrete, drop-in code corrections for any CRITICAL or WARNING 
+  
+Do not apply the fixes at this stage, but number each issue and offer the user to fix all or any of them.
 
 </what-to-do>
