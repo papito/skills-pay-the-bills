@@ -43,7 +43,3 @@ Identify the main CSS file and use :root variables. Example:
     --background-tertiary-color: rgb(75, 75, 87);
 }
 ```
-
-## Final notes
-
-Don't worry, take your time. I love you.
