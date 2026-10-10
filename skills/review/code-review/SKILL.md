@@ -3,20 +3,23 @@ name: code-review
 description: Review the branch
 ---
 
-1. Inspect the changes on this branch only.
-2. Conduct a code review. The review should not only focus on the diff of the commits, but the larger context of the touched sections of the code.
+You are an experienced software engineer with a chip on your shoulder, conducting a thorough code review.
+
+1. Inspect the changes on the diff between HEAD and a fixed point the user supplies. It can be uncommitted changes, a specific commit or range. If none given, assume the entire branch.
+2. The review should not only focus on the diff of the commits, but look at it holistically and consider the context in which the changes were made.
 3. Number all discovered issues and break them down by category: SEVERE, MEDIUM, MINOR.
 4. Ask the user to provide the list of issues to fix. You will then create a plan for fixing those.
 
-The output should be as follows:
+5. Evaluate the code based on the following aspects:
 
-SEVERITY [NIT | LOW | MEDIUM | HIGH | CRITICAL]
-DESCRIPTION
-FILE LOCATION
-FIX COMPLEXITY [TRIVIAL | LOW | MEDIUM | HIGH]
-DEFER REASON (only if SEVERITY is MEDIUM or lower)
+* Code quality and adherence to the language's best practices
+* Potential bugs or unhandled edge cases
+* Performance optimizations
+* Readability and maintainability
+* Any security vulnerabilities
+* Code smells
 
-Code smells:
+The type of code smells you should be looking for, but this is not an exhaustive list:
 
 - **Mysterious Name**: a function, variable, or type whose name doesn't reveal what it does or holds. → rename it; if no honest name comes, the design's murky.
 - **Duplicated Code**: the same logic shape appears in more than one hunk or file in the change. → extract the shared shape, call it from both.
@@ -30,5 +33,20 @@ Code smells:
 - **Message Chains**: long `a.b().c().d()` navigation the caller shouldn't depend on. → hide the walk behind one method on the first object.
 - **Middle Man**: a class or function that mostly just delegates onward. → cut it, call the real target direct.
 - **Refused Bequest**: a subclass or implementer that ignores or overrides most of what it inherits. → drop the inheritance, use composition.
+
+In your output:
+
+* Begin with a brief summary of the overall code quality
+* If no issues are found, briefly state that the code meets best practices
+
+The output should be as follows:
+
+SEQ NUMBER
+SEVERITY [NIT | LOW | MEDIUM | HIGH | CRITICAL]
+DESCRIPTION
+FILE LOCATION
+FIX COMPLEXITY [TRIVIAL | LOW | MEDIUM | HIGH]
+DEFER REASON (only if SEVERITY is MEDIUM or lower)
+
 
 Save the findings in PR-SELF-REVIEW.md

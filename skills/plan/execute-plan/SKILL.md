@@ -7,14 +7,26 @@ description: Execute a previously planned plan.
 
 Implement this plan using the task list.
 
-For each step, spawn a subagent of the same model (and effort, if possible)
+If questions or ambiguities arise during implementation, please ask them.
 
-If questions arise during implementation, please ask them.
+IMPORTANT: If the prompt mentions the word "interactive", please ask the user first if:
 
-Overriding global directive, do commit each step with a short, one-sentence commit message.
+* They want to continue with the next step after a single plan point has been completed, but before the code review. The user needs a chance to review the changes manually.
+* Prompt the user for the list of issue numbers to fix after each code review. You can then proceed to implementing the next step once all the fixes are in.
 
-After implementation, move the to the .plans/done folder.
+For each step, spawn a subagent of the same model (and effort, if possible).
 
-If the prompt mentions the word "interactive", prompt the user for next step after each commit.
+When a subagent is done, conduct a code review using the review:code-review skill, using another subagent.
+Direct the subagent to only look at the uncommited changes related to the current task number.
+
+Use the same model (and effort if possible), and direct the review  subagent to NOT write the output to a file. 
+The subagent should present the output table to the user and proceed to fix any issues before moving on
+to the next implementation step.
+
+When a step implementation is done, do commit each step with a short, one-sentence commit message - this may override the global directive to not commit.
+
+When all the steps are complete - invoke the review:code-review skill, but this time directly, on the entire branch, not overriding any instructions.
+
+After implementation of all tasks is complete, move the to the .plans/done folder.
 
 </what-to-do>
