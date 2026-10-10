@@ -9,10 +9,10 @@ Implement this plan using the task list.
 
 If questions or ambiguities arise during implementation, please ask them.
 
-IMPORTANT: If the prompt mentions the word "interactive", please ask the user first if:
+IMPORTANT: If the prompt mentions the word "interactive", please ask the user first before proceeding in the following instances:
 
-* They want to continue with the next step after a single plan point has been completed, but before the code review. The user needs a chance to review the changes manually.
-* Prompt the user for the list of issue numbers to fix after each code review. You can then proceed to implementing the next step once all the fixes are in.
+* Do they want to continue after a single plan point has been completed, but before the code review commences. The user needs a chance to review the changes manually.
+* The list of issue numbers to fix after each code review. You can then proceed to implementing the next step once all the fixes are in.
 
 For each step, spawn a subagent of the same model (and effort, if possible).
 
