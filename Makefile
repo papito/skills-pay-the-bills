@@ -1,6 +1,7 @@
 SHELL := /bin/sh
 
 SKILLS_SRC ?= skills
+ALIASES_FILE ?= $(HOME)/.bash_aliases
 
 COPILOT_SKILLS_DIR ?= $(HOME)/.copilot/skills
 COPILOT_NAMESPACE ?= skills-pay-the-bills
@@ -24,14 +25,14 @@ CODEX_MANIFEST ?= $(CODEX_TARGET_DIR)/.$(CODEX_NAMESPACE)-manifest
 RSYNC_MD_FILTER := -a --delete --include='*.md' --include='*/' --exclude='*'
 
 
-.PHONY: deploy-copilot deploy-claude deploy-codex deploy-all
+.PHONY: update-aliases deploy-copilot deploy-claude deploy-codex deploy-all
 
-deploy-copilot:
+deploy-copilot: update-aliases
 	@mkdir -p "$(COPILOT_TARGET_DIR)"
 	@rsync $(RSYNC_MD_FILTER) "$(SKILLS_SRC)/" "$(COPILOT_TARGET_DIR)/" || exit 1
 	@echo "Deployed to $(COPILOT_TARGET_DIR)"
 
-deploy-claude:
+deploy-claude: update-aliases
 	@mkdir -p "$(CLAUDE_SKILLS_DIR)/$(CLAUDE_NAMESPACE)"
 	@rsync $(RSYNC_MD_FILTER) "$(SKILLS_SRC)/" "$(CLAUDE_SKILLS_DIR)/$(CLAUDE_NAMESPACE)/" || exit 1
 	@echo "Deployed to $(CLAUDE_SKILLS_DIR)/$(CLAUDE_NAMESPACE)"
@@ -39,7 +40,7 @@ deploy-claude:
 	@rsync $(RSYNC_MD_FILTER) "$(SKILLS_SRC)/" "$(CLAUDE_ALT_SKILLS_DIR)/$(CLAUDE_NAMESPACE)/" || exit 1
 	@echo "Deployed to $(CLAUDE_ALT_SKILLS_DIR)/$(CLAUDE_NAMESPACE)"
 
-deploy-codex:
+deploy-codex: update-aliases
 	@mkdir -p "$(CODEX_TARGET_DIR)"
 	@set -e; \
 	tmp_manifest=$$(mktemp); \
@@ -69,3 +70,7 @@ deploy-codex:
 	sort -u "$$tmp_manifest" > "$(CODEX_MANIFEST)"
 
 deploy-all: deploy-copilot deploy-claude deploy-codex
+
+update-aliases:
+	@python3 scripts/update-skills-alias.py "$(SKILLS_SRC)" "$(ALIASES_FILE)"
+	@echo "Updated skills function in $(ALIASES_FILE)"

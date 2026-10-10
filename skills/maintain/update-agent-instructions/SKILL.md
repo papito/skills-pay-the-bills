@@ -1,7 +1,6 @@
 ---
 name: update-agent-instructions
-description: Update the existing agents file in the project root for guiding AI coding agents.
-tools: ['insert_edit_into_file', 'read_file']
+description: Update docs and agentic instructions after drift
 ---
 
 <what-to-do>

@@ -37,15 +37,19 @@ Repository of agent skills, organized by domain:
 
 The `Makefile` syncs markdown skills (`*.md`) from `SKILLS_SRC` into local Copilot, Claude, and Codex skill folders.
 Copilot and Claude keep the source directory shape under a namespace. Codex flattens skills so each skill directory is a direct child of the Codex skills directory.
+Every deployment also adds or refreshes a managed `skills` function in `ALIASES_FILE`, preserving existing content. If an older `skills` function exists outside the managed block, the new definition takes precedence when the file is sourced. `deploy-all` updates the function once, including with parallel make.
+The function prints the skills from `SKILLS_SRC`, grouped by domain, with aligned name and description columns. Names come from skill directory names and descriptions from `SKILL.md` frontmatter; the output is captured at deployment time.
 
 ### Prerequisites
 - `make`
 - `rsync`
+- `python3`
 
 ### Configuration
 
 Defaults are defined in `Makefile` and can be overridden per command:
 - `SKILLS_SRC` (default: `skills`)
+- `ALIASES_FILE` (default: `$HOME/.bash_aliases`)
 - `COPILOT_SKILLS_DIR` (default: `$HOME/.copilot/skills`)
 - `COPILOT_NAMESPACE` (default: `skills-pay-the-bills`)
 - `COPILOT_TARGET_DIR` (default: `$COPILOT_SKILLS_DIR/$COPILOT_NAMESPACE`)
@@ -66,6 +70,15 @@ make deploy-claude
 make deploy-codex
 make deploy-all
 ```
+
+After deploying, open a new Bash shell or reload the alias file, then run:
+
+```bash
+source ~/.bash_aliases
+skills
+```
+
+If you override `ALIASES_FILE`, source that file instead.
 
 ### Examples
 

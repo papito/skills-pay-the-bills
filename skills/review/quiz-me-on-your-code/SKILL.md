@@ -1,6 +1,6 @@
 ---
 name: quiz-me-on-your-code
-description: Quiz the user on their understanding of code that Claude recently wrote or modified. Use when the user wants to verify they understand Claude-generated code before moving on.
+description: Quiz me on my understanding of the generated nonsense
 ---
 
 <what-to-do>
