@@ -1,21 +1,32 @@
 # skills-pay-the-bills
 
 Repository of agent skills, organized by domain:
+
 - `maintain/`
 - `plan/`
 - `review/`
+- `write/`
 
 ## Skills Table of Contents
 
 ### maintain
+
 - [`update-agent-instructions`](skills/maintain/update-agent-instructions/SKILL.md) - Update root agent-instruction files (such as `AGENTS.md`/`CLAUDE.md`) with minimal, codebase-aligned changes.
 
 ### plan
-- [`grill-me`](skills/plan/grill-me/SKILL.md) - Stress-test a plan against project language/domain decisions and produce a refined implementation plan.
+
+- [`execute-plan`](skills/plan/execute-plan/SKILL.md) - Implement a plan step by step and move it to `plans/done` when complete.
+- [`grill-me`](skills/plan/grill-me/SKILL.md) - Challenge a plan against project domain language, update glossary documentation, and save a refined implementation plan in `plans/`.
 
 ### review
-- [`check-my-pr`](skills/review/check-my-pr/SKILL.md) - Review current branch changes in context and report issues by severity.
+
+- [`check-my-pr`](skills/review/check-my-pr/SKILL.md) - Review branch changes in four passes covering security, correctness, resilience, and performance/maintainability; report issues by severity with proposed fixes.
+- [`code-review`](skills/review/code-review/SKILL.md) - Review branch changes against repository standards and the originating specification, reporting findings separately.
 - [`quiz-me-on-your-code`](skills/review/quiz-me-on-your-code/SKILL.md) - Quiz the user on recently written/modified code to verify understanding.
+
+### write
+
+- [`editor`](skills/write/editor/SKILL.md) - Critique writing with a rating, specific weaknesses, strengths, and concrete revision suggestions.
 
 ## Deployment
 

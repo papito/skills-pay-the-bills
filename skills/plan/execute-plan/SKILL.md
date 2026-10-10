@@ -5,15 +5,16 @@ description: Execute a previously planned plan.
 
 <what-to-do>
 
-Implement this plan using the task list, step by step.
+Implement this plan using the task list.
 
-Ask clarifying questions if:
+For each step, spawn a subagent of the same model (and effort, if possible)
 
-* They arise
-* There is ambiguity in the original plan
-* There may be a serious problem implementing the plan as is
-* There is a clearly better / more performant way of doing something
+If questions arise during implementation, please ask them.
 
-After the implementation, move the plan to the plans/done folder.
+Overriding global directive, do commit each step with a short, one-sentence commit message.
+
+After implementation, move the to the .plans/done folder.
+
+If the prompt mentions the word "interactive", prompt the user for next step after each commit.
 
 </what-to-do>
