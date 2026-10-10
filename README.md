@@ -2,6 +2,7 @@
 
 Repository of agent skills, organized by domain:
 
+- `code/`
 - `maintain/`
 - `plan/`
 - `review/`
@@ -9,19 +10,23 @@ Repository of agent skills, organized by domain:
 
 ## Skills Table of Contents
 
+### code
+
+- [`execute`](skills/code/execute/SKILL.md) - Implement an existing plan with subagents, review and commit each step, review the full branch, and move the completed plan to `.plans/done`.
+- [`execute-with-flow`](skills/code/execute-with-flow/SKILL.md) - Execute a plan with user approval of each proposed code diff and a short explanation of its intent.
+
 ### maintain
 
 - [`update-agent-instructions`](skills/maintain/update-agent-instructions/SKILL.md) - Update root agent-instruction files (such as `AGENTS.md`/`CLAUDE.md`) with minimal, codebase-aligned changes.
 
 ### plan
 
-- [`execute-plan`](skills/plan/execute-plan/SKILL.md) - Implement a plan step by step and move it to `plans/done` when complete.
+- [`execute-with-flow`](skills/plan/execute-plan/SKILL.md) - Implement a plan with subagents, review and commit each step, review the full branch, and move the completed plan to `.plans/done`.
 - [`grill-me`](skills/plan/grill-me/SKILL.md) - Challenge a plan against project domain language, update glossary documentation, and save a refined implementation plan in `plans/`.
 
 ### review
 
-- [`check-my-pr`](skills/review/check-my-pr/SKILL.md) - Review branch changes in four passes covering security, correctness, resilience, and performance/maintainability; report issues by severity with proposed fixes.
-- [`code-review`](skills/review/code-review/SKILL.md) - Review branch changes against repository standards and the originating specification, reporting findings separately.
+- [`code-review`](skills/review/code-review/SKILL.md) - Review branch changes for quality, correctness, performance, security, and code smells; save numbered findings in `PR-SELF-REVIEW.md` and ask which issues to fix.
 - [`quiz-me-on-your-code`](skills/review/quiz-me-on-your-code/SKILL.md) - Quiz the user on recently written/modified code to verify understanding.
 
 ### write

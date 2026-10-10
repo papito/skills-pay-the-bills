@@ -1,6 +1,6 @@
 ---
-name: execute-with-flow
-description: Execute a previously planned plan.
+name: execute
+description: Execute an already-created plan
 ---
 
 <what-to-do>
@@ -16,7 +16,7 @@ IMPORTANT: If the prompt mentions the word "interactive", please ask the user fi
 
 For each step, spawn a subagent of the same model (and effort, if possible).
 
-When a subagent is done, conduct a code review using the review:code-review skill, using another subagent.
+When a subagent is done, conduct a code review using the review:code-review skill, using another subagent (skip this step for documentation tasks!).
 Direct the subagent to only look at the uncommited changes related to the current task number.
 
 Use the same model (and effort if possible), and direct the review subagent to NOT write the output to a file. The subagent should present the output table to the user and proceed to fix any issues before moving on to the next implementation step.
