@@ -12,7 +12,7 @@ Repository of agent skills, organized by domain:
 
 ### code
 
-- [`execute`](skills/code/execute/SKILL.md) - Implement an existing plan with subagents, review and commit each step, review the full branch, and move the completed plan to `.plans/done`.
+- [`execute`](skills/code/execute/SKILL.md) - Implement an existing plan with subagents in one-shot, cautious, or flow mode, optionally review and commit changes, and move the completed plan to `.plans/done`.
 - [`execute-with-flow`](skills/code/execute-with-flow/SKILL.md) - Execute a plan with user approval of each proposed code diff and a short explanation of its intent.
 
 ### maintain
