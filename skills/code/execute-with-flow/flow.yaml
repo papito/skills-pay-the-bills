@@ -12,3 +12,6 @@ execution:
     # Each flag independently accepts true or false.
     after_each_task: true
     entire_plan: true
+
+    # Name of an available code review skill; used when either flag above is true.
+    skill: self-review

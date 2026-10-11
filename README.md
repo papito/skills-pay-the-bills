@@ -12,7 +12,7 @@ Repository of agent skills, organized by domain:
 
 ### code
 
-- [`execute-with-flow`](skills/code/execute-with-flow/SKILL.md) - Implement an existing plan in hotshot, cautious, or flow mode (subagent per task; the parent implements directly in flow, presenting each small edit with locations, an explanation, and the diff before asking to proceed). Load and save preferences in the project's root `flow.yaml` (kept gitignored), confirm saved values with the user at the start of each run (re-collecting all of them if rejected), prompt for missing values, isolate plan changes from pre-existing uncommitted work, and review and commit according to those preferences. [Example config](skills/code/execute-with-flow/flow.yaml).
+- [`execute-with-flow`](skills/code/execute-with-flow/SKILL.md) - Implement an existing plan in hotshot, cautious, or flow mode (subagent per task; the parent implements directly in flow, presenting each small edit with locations, an explanation, and the diff before asking to proceed). Load and save preferences in the project's root `flow.yaml` (kept gitignored), confirm saved values with the user at the start of each run (re-collecting all of them if rejected), prompt for missing values, isolate plan changes from pre-existing uncommitted work, and review (with the code review skill chosen in `flow.yaml`) and commit according to those preferences. [Example config](skills/code/execute-with-flow/flow.yaml).
 
 ### maintain
 
@@ -24,7 +24,7 @@ Repository of agent skills, organized by domain:
 
 ### review
 
-- [`code-review`](skills/review/code-review/SKILL.md) - Review branch changes for quality, correctness, performance, security, and code smells; save numbered findings in `PR-SELF-REVIEW.md` and ask which issues to fix.
+- [`self-review`](skills/review/self-review/SKILL.md) - Review branch changes for quality, correctness, performance, security, and code smells; save numbered findings in `PR-SELF-REVIEW.md` and ask which issues to fix.
 - [`quiz-me-on-your-code`](skills/review/quiz-me-on-your-code/SKILL.md) - Quiz the user on recently written/modified code to verify understanding.
 
 ### write
@@ -35,7 +35,9 @@ Repository of agent skills, organized by domain:
 ## Deployment
 
 The `Makefile` syncs markdown skills (`*.md`) from `SKILLS_SRC` into local Copilot, Claude, and Codex skill folders.
-Copilot and Claude keep the source directory shape under a namespace. Codex flattens skills so each skill directory is a direct child of the Codex skills directory.
+Copilot keeps the source directory shape under a namespace. Claude and Codex flatten skills so each skill directory is a direct child of their skills directory, which is where they look for skills; skill directory names must therefore be unique.
+Flat deployments record the skills they deploy in a manifest file. Later deployments remove only skills listed there that no longer exist in `SKILLS_SRC`, and refuse to overwrite a skill directory that was not deployed from this repository.
+Earlier versions deployed Claude skills under `skills-pay-the-bills/` inside the Claude skills directories, where Claude Code does not find them. After switching to the flat layout, delete those old folders manually.
 Every deployment also adds or refreshes a managed `skills` function in `ALIASES_FILE`, preserving existing content. If an older `skills` function exists outside the managed block, the new definition takes precedence when the file is sourced. `deploy-all` updates the function once, including with parallel make.
 The function prints the skills from `SKILLS_SRC`, grouped by domain, with aligned name and description columns. Names come from skill directory names and descriptions from `SKILL.md` frontmatter; the output is captured at deployment time.
 
@@ -54,7 +56,9 @@ Defaults are defined in `Makefile` and can be overridden per command:
 - `COPILOT_TARGET_DIR` (default: `$COPILOT_SKILLS_DIR/$COPILOT_NAMESPACE`)
 - `CLAUDE_SKILLS_DIR` (default: `$HOME/.claude/skills`)
 - `CLAUDE_ALT_SKILLS_DIR` (default: `$HOME/.config/claude/skills`)
-- `CLAUDE_NAMESPACE` (default: `skills-pay-the-bills`)
+- `CLAUDE_NAMESPACE` (default: `skills-pay-the-bills`; names the manifest files)
+- `CLAUDE_MANIFEST` (default: `$CLAUDE_SKILLS_DIR/.$CLAUDE_NAMESPACE-manifest`)
+- `CLAUDE_ALT_MANIFEST` (default: `$CLAUDE_ALT_SKILLS_DIR/.$CLAUDE_NAMESPACE-manifest`)
 - `CODEX_HOME` (default: `$HOME/.codex`)
 - `CODEX_SKILLS_DIR` (default: `$CODEX_HOME/skills`)
 - `CODEX_NAMESPACE` (default: `skills-pay-the-bills`)

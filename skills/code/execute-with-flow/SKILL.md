@@ -52,8 +52,9 @@ After all tasks are done, optionally conduct a holistic code review.
 | `execution.commit` | `never`, `after_each_task`, `after_all_tasks` |
 | `execution.reviews.after_each_task` | `true`, `false` |
 | `execution.reviews.entire_plan` | `true`, `false` |
+| `execution.reviews.skill` | Name of a code review skill available in this session |
 
-The review flags are independent; setting both to `false` disables code reviews.
+The review flags are independent; setting both to `false` disables code reviews. `execution.reviews.skill` is needed only when at least one review flag is `true`; leave a saved value in place when reviews are disabled.
 
 ## Snapshots
 
@@ -86,10 +87,10 @@ git diff --binary <from> <to> | git apply --cached
 The commit message is one short sentence conveying the overall theme of the changes.
 
 ## Code reviews
-The code review step should attempt to invoke the review:code-review skill, using a new subagent.
+The code review step invokes the skill named in `execution.reviews.skill`, using a new subagent. Give the subagent that exact skill name.
 
-* If review:code-review does not exist, attempt to locate another code review skill the user already has available.
-* If none are found, skip this step and warn the user.
+* If that skill is not available, tell the user, ask them to choose another available code review skill (see "Preference questions"), and save the choice to `flow.yaml`.
+* If no code review skill is available, skip this step and warn the user.
 * Pass the reviewer the task's diff (per-task review) or the whole plan's diff (holistic review), as described under "Snapshots".
 * Direct the code review skill to NOT write any output to a file.
 * In the delegation prompt, instruct the review subagent to only return numbered findings in a table to the parent agent, without asking the user questions or implementing fixes.
@@ -185,5 +186,7 @@ Ask only for values still unresolved after loading `flow.yaml`, applying explici
 3. When to conduct code reviews (checkboxes):
     - After each task
     - After all tasks (entire plan)
+4. Which code review skill to use (choose one; ask only if at least one review is enabled):
+    - List the code review skills available in this session, with `self-review` first when it is available.
 
 </what-to-do>

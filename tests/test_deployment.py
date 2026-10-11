@@ -62,8 +62,7 @@ class DeploymentTests(unittest.TestCase):
         first = self.alias_file.read_bytes()
         self.deploy("deploy-all")
         self.assertEqual(self.alias_file.read_bytes(), first)
-        for destination in ("copilot/maintain", "claude/skills-pay-the-bills/maintain",
-                            "claude-alt/skills-pay-the-bills/maintain", "codex"):
+        for destination in ("copilot/maintain", "claude", "claude-alt", "codex"):
             self.assertTrue((self.directory / destination / "update-agent-instructions/SKILL.md").is_file())
         output = self.skills_output()
         header_column = output.splitlines()[0].index("Description")
@@ -80,6 +79,46 @@ class DeploymentTests(unittest.TestCase):
         self.assertNotIn("Run the demo", output)
         self.assertNotIn("update-agent-instructions", output)
         self.assertEqual(self.alias_file.read_text().count("# BEGIN skills-pay-the-bills skills"), 1)
+
+    def test_flat_deployments_remove_only_their_own_stale_skills(self):
+        for target, directories in (("deploy-claude", ("claude", "claude-alt")), ("deploy-codex", ("codex",))):
+            with self.subTest(target=target):
+                for directory in directories:
+                    own = self.directory / directory / "own-skill/SKILL.md"
+                    own.parent.mkdir(parents=True, exist_ok=True)
+                    own.write_text("mine")
+                self.deploy(target)
+                for directory in directories:
+                    self.assertTrue((self.directory / directory / "demo/SKILL.md").is_file())
+                    self.assertFalse((self.directory / directory / "code").exists())
+                demo = self.source / "code/demo/SKILL.md"
+                demo.unlink()
+                self.deploy(target)
+                demo.write_text("---\nname: demo\ndescription: Run the demo\n---\n")
+                for directory in directories:
+                    self.assertFalse((self.directory / directory / "demo").exists())
+                    self.assertTrue((self.directory / directory / "update-agent-instructions/SKILL.md").is_file())
+                    self.assertEqual((self.directory / directory / "own-skill/SKILL.md").read_text(), "mine")
+
+    def test_flat_deployments_refuse_to_overwrite_unmanaged_skills(self):
+        for target, directory in (("deploy-claude", "claude"), ("deploy-codex", "codex")):
+            with self.subTest(target=target):
+                existing = self.directory / directory / "demo/SKILL.md"
+                existing.parent.mkdir(parents=True, exist_ok=True)
+                existing.write_text("mine")
+                result = self.deploy(target, check=False)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn("not deployed from this repository", result.stderr)
+                self.assertEqual(existing.read_text(), "mine")
+                self.assertFalse((self.directory / directory / "update-agent-instructions").exists())
+
+    def test_flat_deployments_reject_duplicate_skill_names(self):
+        self.add_skill("review/demo", "Another demo")
+        for target in ("deploy-claude", "deploy-codex"):
+            with self.subTest(target=target):
+                result = self.deploy(target, check=False)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn("Duplicate skill name: demo", result.stderr)
 
     def test_subset_source_and_literal_shell_characters(self):
         marker = self.directory / "must not exist"

@@ -10,6 +10,8 @@ COPILOT_TARGET_DIR ?= $(COPILOT_SKILLS_DIR)/$(COPILOT_NAMESPACE)
 CLAUDE_SKILLS_DIR ?= $(HOME)/.claude/skills
 CLAUDE_ALT_SKILLS_DIR ?= $(HOME)/.config/claude/skills
 CLAUDE_NAMESPACE ?= skills-pay-the-bills
+CLAUDE_MANIFEST ?= $(CLAUDE_SKILLS_DIR)/.$(CLAUDE_NAMESPACE)-manifest
+CLAUDE_ALT_MANIFEST ?= $(CLAUDE_ALT_SKILLS_DIR)/.$(CLAUDE_NAMESPACE)-manifest
 
 CODEX_HOME ?= $(HOME)/.codex
 CODEX_SKILLS_DIR ?= $(CODEX_HOME)/skills
@@ -33,41 +35,11 @@ deploy-copilot: update-aliases
 	@echo "Deployed to $(COPILOT_TARGET_DIR)"
 
 deploy-claude: update-aliases
-	@mkdir -p "$(CLAUDE_SKILLS_DIR)/$(CLAUDE_NAMESPACE)"
-	@rsync $(RSYNC_MD_FILTER) "$(SKILLS_SRC)/" "$(CLAUDE_SKILLS_DIR)/$(CLAUDE_NAMESPACE)/" || exit 1
-	@echo "Deployed to $(CLAUDE_SKILLS_DIR)/$(CLAUDE_NAMESPACE)"
-	@mkdir -p "$(CLAUDE_ALT_SKILLS_DIR)/$(CLAUDE_NAMESPACE)"
-	@rsync $(RSYNC_MD_FILTER) "$(SKILLS_SRC)/" "$(CLAUDE_ALT_SKILLS_DIR)/$(CLAUDE_NAMESPACE)/" || exit 1
-	@echo "Deployed to $(CLAUDE_ALT_SKILLS_DIR)/$(CLAUDE_NAMESPACE)"
+	@sh scripts/deploy-flat.sh "$(SKILLS_SRC)" "$(CLAUDE_SKILLS_DIR)" "$(CLAUDE_MANIFEST)"
+	@sh scripts/deploy-flat.sh "$(SKILLS_SRC)" "$(CLAUDE_ALT_SKILLS_DIR)" "$(CLAUDE_ALT_MANIFEST)"
 
 deploy-codex: update-aliases
-	@mkdir -p "$(CODEX_TARGET_DIR)"
-	@set -e; \
-	tmp_manifest=$$(mktemp); \
-	skill_list=$$(mktemp); \
-	trap 'rm -f "$$tmp_manifest" "$$skill_list"' EXIT; \
-	find "$(SKILLS_SRC)" -type f -name SKILL.md > "$$skill_list"; \
-	while IFS= read -r skill_file; do \
-		skill_dir=$$(dirname "$$skill_file"); \
-		skill_name=$$(basename "$$skill_dir"); \
-		if grep -Fxq "$$skill_name" "$$tmp_manifest"; then \
-			echo "Duplicate Codex skill name: $$skill_name" >&2; \
-			exit 1; \
-		fi; \
-		printf '%s\n' "$$skill_name" >> "$$tmp_manifest"; \
-		mkdir -p "$(CODEX_TARGET_DIR)/$$skill_name"; \
-		rsync $(RSYNC_MD_FILTER) "$$skill_dir/" "$(CODEX_TARGET_DIR)/$$skill_name/" || exit 1; \
-		echo "Deployed to $(CODEX_TARGET_DIR)/$$skill_name"; \
-	done < "$$skill_list"; \
-	if [ -f "$(CODEX_MANIFEST)" ]; then \
-		while IFS= read -r old_skill; do \
-			if [ -n "$$old_skill" ] && ! grep -Fxq "$$old_skill" "$$tmp_manifest"; then \
-				rm -rf "$(CODEX_TARGET_DIR)/$$old_skill"; \
-				echo "Removed stale Codex skill $(CODEX_TARGET_DIR)/$$old_skill"; \
-			fi; \
-		done < "$(CODEX_MANIFEST)"; \
-	fi; \
-	sort -u "$$tmp_manifest" > "$(CODEX_MANIFEST)"
+	@sh scripts/deploy-flat.sh "$(SKILLS_SRC)" "$(CODEX_TARGET_DIR)" "$(CODEX_MANIFEST)"
 
 deploy-all: deploy-copilot deploy-claude deploy-codex
 

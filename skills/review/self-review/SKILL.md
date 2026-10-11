@@ -1,5 +1,5 @@
 ---
-name: code-review
+name: self-review
 description: Review new code
 ---
 
