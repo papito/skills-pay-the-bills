@@ -39,9 +39,12 @@ After all tasks are done, optionally conduct a holistic code review.
 
 1. Locate `flow.yaml` in the main project directory the user is currently working on: use the Git repository root when inside a repository, otherwise the project's root directory. Load this project file, not the example in the skill folder.
 2. Read the fields below. If the file is absent, treat all fields as missing. Explicit user preferences from the current conversation override saved values. Treat missing, null, or unsupported values as unresolved; `false` is a valid review preference.
-3. Ask only for unresolved preferences using "Preference questions", and wait for answers. Do not use the example's values as defaults.
-4. Save all resolved preferences to the same project-root `flow.yaml` before implementation starts, creating it if needed. Preserve unrelated YAML keys and existing comments where possible. If the existing YAML cannot be parsed, resolve that problem before updating it.
-5. If the user changes preferences later, update this file and use the new values for subsequent work.
+3. If `flow.yaml` supplied any valid values not overridden by the conversation, show the user those saved settings (plus any conversation overrides) and ask whether they are acceptable for this run. Wait for the answer. Skip this step when the file supplied no valid values.
+    - Accepted: keep the saved values as resolved.
+    - Not accepted: discard all saved values and treat every field as unresolved, except values the user stated explicitly in this conversation.
+4. Ask only for unresolved preferences using "Preference questions", and wait for answers. Do not use the example's values or rejected saved values as defaults. Do not ask for confirmation again after collecting answers.
+5. Save all resolved preferences to the same project-root `flow.yaml` before implementation starts, creating it if needed. Preserve unrelated YAML keys and existing comments where possible. If the existing YAML cannot be parsed, resolve that problem before updating it.
+6. If the user changes preferences later, update this file and use the new values for subsequent work.
 
 | YAML field | Allowed values |
 | --- | --- |
@@ -149,7 +152,7 @@ After all tasks:
 
 ## Preference questions
 
-Ask only for values still unresolved after loading `flow.yaml` and applying explicit preferences from the conversation.
+Ask only for values still unresolved after loading `flow.yaml`, applying explicit preferences from the conversation, and confirming saved settings with the user.
 
 1. Which mode to work in (choose one):
     - Hotshot: no interaction after setup
