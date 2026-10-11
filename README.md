@@ -12,8 +12,7 @@ Repository of agent skills, organized by domain:
 
 ### code
 
-- [`execute`](skills/code/execute/SKILL.md) - Implement an existing plan in hotshot, cautious, or flow mode (subagent per task; the parent implements directly in flow). Load and save preferences in the project's root `execute.yaml` (kept gitignored), prompt for missing values, isolate plan changes from pre-existing uncommitted work, and review and commit according to those preferences. [Example config](skills/code/execute/execute.yaml).
-- [`execute-with-flow`](skills/code/execute-with-flow/SKILL.md) - Execute a plan with user approval of each proposed code diff and a short explanation of its intent.
+- [`execute-with-flow`](skills/code/execute-with-flow/SKILL.md) - Implement an existing plan in hotshot, cautious, or flow mode (subagent per task; the parent implements directly in flow). Load and save preferences in the project's root `execute.yaml` (kept gitignored), prompt for missing values, isolate plan changes from pre-existing uncommitted work, and review and commit according to those preferences. [Example config](skills/code/execute-with-flow/execute.yaml).
 
 ### maintain
 
@@ -21,7 +20,6 @@ Repository of agent skills, organized by domain:
 
 ### plan
 
-- [`execute-with-flow`](skills/plan/execute-plan/SKILL.md) - Implement a plan with subagents, review and commit each step, review the full branch, and move the completed plan to `.plans/done`.
 - [`grill-me`](skills/plan/grill-me/SKILL.md) - Challenge a plan against project domain language, update glossary documentation, and save a refined implementation plan in `plans/`.
 
 ### review

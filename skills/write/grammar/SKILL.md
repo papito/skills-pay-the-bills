@@ -15,7 +15,7 @@ Create a table with the list of findings:
 
 SEQ |  LINE  |          ORIGINAL          |         SUGGESTED FIX
 
-Prompt the user which SEQ numbers they would like to fix, or all of them.
+Prompt the user which SEQ numbers they would like to fix.
 
 </what-to-do>
 
