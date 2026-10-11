@@ -19,45 +19,59 @@ This skill has three modes, which determine the level of user interaction.
 3. Flow: the user works with the agent on each change
 
 
-
 ## Code reviews
 The code review step should attempt to invoke the review:code-review skill, using a new subagent.
 
 * If review:code-review does not exist, attempt to locate another code review skill the user already has available.
 * If none are found, skip this step and warn the user.
 * Direct the code review skill to NOT write any output to a file.
-* The review subagent then should present the output table to the user and proceed to fix any issues before moving on to the next implementation step.
-* Ask the user which issue numbers to fix after each code review. You can then proceed to implementing the next step once all the fixes are in.
+* The review subagent then should present the output table to the user (the rest depends on the Mode).
+* Resolve all findings selected under the current mode before starting the next task.
 * Do not review steps only dedicated to documentation.
+
+What happens after a code review is done depends on the mode:
+
+* ONE-SHOT: Fix all issues.
+* CAUTIOUS or FLOW: Ask the user which findings should be fixed, then address them.
+
+In FLOW mode, the usual Flow Mode during code review fixes does not apply - simply go forward with the fixes.
+
 
 ## Flow mode
 
 Flow mode is subject to other user preferences (whether to conduct code reviews and when to commit work), 
 but the main difference is in how the code is being written. 
 
-For each change:
+For each edit:
 
-1. Make the change
+1. Make the edit
 2. Explain what it does - this is not just a copy of code comments; it should describe the purpose of this change in the context of the task at hand. What does it do? Why do we need it? Etc.
-3. Show the diff on screen.
+3. Show the diff on screen and the file location.
 4. Ask the user to choose one: 
    - Proceed
-     - Ask a question about the code
-     - Have the agent make a change
-     - Hand-off (let the user manually tweak the code)
-5. If the user asks for a change, make it and go to step #1 again, until the user is ready to move on.
+   - Ask a question about the code
+   - Have the agent make a change
+   - Hand-off (let the user manually tweak the code)
+5. If the user asks for a change, make it and return to step #2, until the user is ready to move on.
+6. If the user chooses Hand-off, pause edits until the user explicitly returns control, then reread their changes before continuing.
+
+It's important to not overwhelm the user with redundant changes. For mechanical, repetitive changes across one or multiple files, bundle those into one prompt.
+For example, a variable/method rename should not invoke the Flow for each change. It should be all or nothing.
 
 ## The steps
 
-Bullet points describe mandatory steps. Sub-bullets describe what should happen based on the Mode.
+Bullet points describe the steps. Whether code reviews and commits happen is up to user preferences set earlier in the session.
 
-* A subagent works on one task from a plan. If questions or ambiguities arise during implementation, ask the user to resolve them.
+A task is complete when its acceptance criteria and relevant checks pass and selected review findings are resolved.
+
+* A subagent works on one sequential task from a plan. If questions or ambiguities arise during implementation, ask the user to resolve them.
 * A new subagent reviews the changes made.
-  - ONE-SHOT: optionally commit and move on to the next task.
-  - CAUTIOUS: give the user a chance to look at the changes before moving on. When the user agrees with the changes, optionally commit and move on to the next task.
-* When all tasks are done, optionally conduct the holistic code review of the entire work, then optionally commit.
+* In Cautious mode, present the completed task, including any review fixes, and wait for user approval before committing or starting the next task.
+* Commit
+* When all tasks are done, conduct a holistic code review of the entire work
+* Commit
 
-After implementation of all tasks is complete, move the plan to the .plans/done folder.
+Move the plan to `.plans/done` after all tasks, required reviews, fixes, and user approvals are complete.
 
 ## What the user must answer
 
