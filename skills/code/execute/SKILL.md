@@ -8,9 +8,13 @@ description: Execute an already-created plan, with multiple interactivity modes
 ## General
 Implement the plan using its task list.
 
-For each step, spawn a subagent of the same model (and effort, if possible).
-After each step, optionally conduct a code review of the work done.
-After all steps are done, optionally conduct a holistic code review.
+Before implementation, collect only preferences not already supplied, using the questions under "What the user must answer".
+
+The parent agent coordinates user interaction and task sequencing. Implementation subagents perform edits and selected review fixes, pausing at Flow interaction points when applicable.
+
+For each task, spawn a subagent of the same model (and effort, if possible).
+After each task, optionally conduct a code review of the work done.
+After all tasks are done, optionally conduct a holistic code review.
 
 This skill has three modes, which determine the level of user interaction.
 
@@ -22,10 +26,13 @@ This skill has three modes, which determine the level of user interaction.
 ## Code reviews
 The code review step should attempt to invoke the review:code-review skill, using a new subagent.
 
+Record the starting state of plan execution and each task, including existing uncommitted changes, before making changes. Pass each task's changes explicitly to its reviewer. For the holistic review, pass all changes made while executing this plan. Exclude pre-existing changes from both review scopes.
+
 * If review:code-review does not exist, attempt to locate another code review skill the user already has available.
 * If none are found, skip this step and warn the user.
 * Direct the code review skill to NOT write any output to a file.
-* The review subagent then should present the output table to the user (the rest depends on the Mode).
+* In the delegation prompt, instruct the review subagent to only return numbered findings in a table to the parent agent, without asking the user questions or implementing fixes.
+* The parent agent presents findings to the user and handles selection according to the current mode.
 * Resolve all findings selected under the current mode before starting the next task.
 * Do not review steps only dedicated to documentation.
 
@@ -67,9 +74,11 @@ A task is complete when its acceptance criteria and relevant checks pass and sel
 * A subagent works on one sequential task from a plan. If questions or ambiguities arise during implementation, ask the user to resolve them.
 * A new subagent reviews the changes made.
 * In Cautious mode, present the completed task, including any review fixes, and wait for user approval before committing or starting the next task.
-* Commit
+* Commit the task if the commit policy is After each task.
 * When all tasks are done, conduct a holistic code review of the entire work
-* Commit
+  - Resolve selected findings and rerun affected checks.
+  - In Cautious mode, obtain user approval of the final fixes before committing.
+* If the commit policy is After all tasks, commit the completed work. If it is After each task, commit any final review fixes. Never commit when the policy is Never.
 
 Move the plan to `.plans/done` after all tasks, required reviews, fixes, and user approvals are complete.
 
