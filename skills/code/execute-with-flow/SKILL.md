@@ -1,5 +1,5 @@
 ---
-name: execute
+name: execute-with-flow
 description: Execute an already-created plan, with multiple interactivity modes
 ---
 
@@ -92,7 +92,6 @@ The code review step invokes the skill named in `execution.reviews.skill`, using
 * If that skill is not available, tell the user, ask them to choose another available code review skill (see "Preference questions"), and save the choice to `flow.yaml`.
 * If no code review skill is available, skip this step and warn the user.
 * Pass the reviewer the task's diff (per-task review) or the whole plan's diff (holistic review), as described under "Snapshots".
-* Direct the code review skill to NOT write any output to a file.
 * In the delegation prompt, instruct the review subagent to only return numbered findings in a table to the parent agent, without asking the user questions or implementing fixes.
 * The parent agent presents findings to the user and handles selection according to the current mode.
 * Resolve all findings selected under the current mode before starting the next task.
