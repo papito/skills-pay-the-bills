@@ -8,7 +8,7 @@ description: Execute an already-created plan, with multiple interactivity modes
 ## General
 Implement the plan using its task list.
 
-Before implementation, collect only preferences not already supplied, using the questions under "What the user must answer".
+Before implementation, load and save project preferences as described under "Execution preferences".
 
 The parent agent coordinates user interaction and task sequencing. Implementation subagents perform edits and selected review fixes, pausing at Flow interaction points when applicable.
 
@@ -18,9 +18,26 @@ After all tasks are done, optionally conduct a holistic code review.
 
 This skill has three modes, which determine the level of user interaction.
 
-1. One-shot: the changes are done without any user interaction (unless ambiguities must be resolved).
+1. One-shot: after preference setup, the changes are done without any user interaction (unless ambiguities must be resolved).
 2. Cautious: the user reviews the changes for each completed task before the next step 
 3. Flow: the user works with the agent on each change
+
+## Execution preferences
+
+1. Locate `execute.yaml` in the main project directory the user is currently working on: use the Git repository root when inside a repository, otherwise the project's root directory. Load this project file, not the example in the skill folder.
+2. Read the fields below. If the file is absent, treat all fields as missing. Explicit user preferences from the current conversation override saved values. Treat missing, null, or unsupported values as unresolved; `false` is a valid review preference.
+3. Ask only for unresolved preferences using "Preference questions", and wait for answers. Do not use the example's values as defaults.
+4. Save all resolved preferences to the same project-root `execute.yaml` before implementation starts, creating it if needed. Preserve unrelated YAML keys and existing comments where possible. If the existing YAML cannot be parsed, resolve that problem before updating it.
+5. If the user changes preferences later, update this file and use the new values for subsequent work.
+
+| YAML field | Allowed values |
+| --- | --- |
+| `execution.mode` | `one_shot`, `cautious`, `flow` |
+| `execution.commit` | `never`, `after_each_task`, `after_all_tasks` |
+| `execution.reviews.after_each_task` | `true`, `false` |
+| `execution.reviews.entire_plan` | `true`, `false` |
+
+The review flags are independent; setting both to `false` disables code reviews.
 
 
 ## Code reviews
@@ -67,7 +84,7 @@ For example, a variable/method rename should not invoke the Flow for each change
 
 ## The steps
 
-Bullet points describe the steps. Whether code reviews and commits happen is up to user preferences set earlier in the session.
+Bullet points describe the steps. Whether code reviews and commits happen follows the resolved execution preferences.
 
 A task is complete when its acceptance criteria and relevant checks pass and selected review findings are resolved.
 
@@ -82,7 +99,9 @@ A task is complete when its acceptance criteria and relevant checks pass and sel
 
 Move the plan to `.plans/done` after all tasks, required reviews, fixes, and user approvals are complete.
 
-## What the user must answer
+## Preference questions
+
+Ask only for values still unresolved after loading `execute.yaml` and applying explicit preferences from the conversation.
 
 1. What mode would they like to work in?
 2. When to commit (choose one)

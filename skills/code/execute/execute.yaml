@@ -1,0 +1,14 @@
+execution:
+  # Allowed: one_shot, cautious, flow
+  mode: cautious
+
+  # Allowed:
+  #   never           — Do not commit.
+  #   after_each_task — Commit each approved task and any final review fixes.
+  #   after_all_tasks — Commit once after all required work is complete.
+  commit: after_each_task
+
+  reviews:
+    # Each flag independently accepts true or false.
+    after_each_task: true
+    entire_plan: true
