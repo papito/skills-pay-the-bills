@@ -6,21 +6,34 @@ description: Execute an already-created plan, with multiple interactivity modes
 <what-to-do>
 
 ## General
-Implement the plan using its task list.
+Implement the plan the user provided or referenced, using its task list. If it is unclear which plan to use, or the plan has no task list, ask the user before starting.
 
-Before implementation, load and save project preferences as described under "Execution preferences".
-
-The parent agent coordinates user interaction and task sequencing. Implementation subagents perform edits and selected review fixes, pausing at Flow interaction points when applicable.
-
-For each task, spawn a subagent of the same model (and effort, if possible).
-After each task, optionally conduct a code review of the work done.
-After all tasks are done, optionally conduct a holistic code review.
+Terms used below:
+- **Task**: one item from the plan's task list.
+- **Edit**: one unit of change presented to the user in Flow mode.
 
 This skill has three modes, which determine the level of user interaction.
 
-1. Hotshot: after preference setup, the changes are done without any user interaction (unless code ambiguities must be resolved).
-2. Cautious: the user reviews the changes for each completed task before the next step 
-3. Flow: the user works with the agent on each change
+1. Hotshot: after setup, tasks are done without user interaction, unless ambiguities must be resolved or checks keep failing.
+2. Cautious: the user approves each completed task before the next task starts.
+3. Flow: the user works with the agent on each edit.
+
+The parent agent coordinates user interaction, task sequencing, and commits.
+- In Hotshot and Cautious modes, spawn one implementation subagent per task, using the same model (and effort, if possible). Subagents cannot talk to the user: if questions or ambiguities arise, the subagent stops and returns them to the parent, which asks the user and resumes the subagent with the answers.
+- In Flow mode, the parent implements each task directly, because every edit involves the user.
+
+After each task, optionally conduct a code review of the work done.
+After all tasks are done, optionally conduct a holistic code review.
+
+## Before starting
+
+1. Resolve execution preferences as described under "Execution preferences".
+2. Make sure `execute.yaml` is ignored by Git: if `git check-ignore -q execute.yaml` fails, add `execute.yaml` to the project's `.gitignore`.
+3. If the working tree has uncommitted changes (other than the `.gitignore` update from step 2) and the commit policy is not `never`, ask the user how to handle them:
+   - Stash them until the plan is done
+   - Commit them first
+   - Leave them in place, and commit only changes made while executing the plan
+4. Take the starting snapshot (see "Snapshots").
 
 ## Execution preferences
 
@@ -39,77 +52,102 @@ This skill has three modes, which determine the level of user interaction.
 
 The review flags are independent; setting both to `false` disables code reviews.
 
+## Snapshots
+
+Snapshots isolate the changes made while executing the plan from pre-existing uncommitted changes, without touching the working tree or the real index. Take one at the start of the plan and after each task (including its review fixes):
+
+```sh
+d=$(mktemp -d)
+GIT_INDEX_FILE="$d/index" git read-tree HEAD
+GIT_INDEX_FILE="$d/index" git add -A
+GIT_INDEX_FILE="$d/index" git write-tree   # prints the snapshot tree ID
+rm -rf "$d"
+```
+
+- A task's changes: `git diff <snapshot before task> <snapshot after task>`.
+- All changes made while executing the plan: `git diff <starting snapshot> <final snapshot>`.
+
+Use these diffs for review scopes and commits. If the user chose to leave pre-existing changes in place, commit only these changes. If a file to be committed also contains pre-existing changes, stage only the plan's hunks; if that is not possible, ask the user before committing the file.
 
 ## Code reviews
 The code review step should attempt to invoke the review:code-review skill, using a new subagent.
 
-Record the starting state of plan execution and each task, including existing uncommitted changes, before making changes. Pass each task's changes explicitly to its reviewer. For the holistic review, pass all changes made while executing this plan. Exclude pre-existing changes from both review scopes.
-
 * If review:code-review does not exist, attempt to locate another code review skill the user already has available.
 * If none are found, skip this step and warn the user.
+* Pass the reviewer the task's diff (per-task review) or the whole plan's diff (holistic review), as described under "Snapshots".
 * Direct the code review skill to NOT write any output to a file.
 * In the delegation prompt, instruct the review subagent to only return numbered findings in a table to the parent agent, without asking the user questions or implementing fixes.
 * The parent agent presents findings to the user and handles selection according to the current mode.
 * Resolve all findings selected under the current mode before starting the next task.
-* Do not review steps only dedicated to documentation.
+* Do not review tasks only dedicated to documentation.
 
 What happens after a code review is done depends on the mode:
 
 * HOTSHOT: Fix all issues.
 * CAUTIOUS or FLOW: Ask the user which findings should be fixed, then address them.
 
-In FLOW mode, the usual Flow Mode during code review fixes does not apply - simply go forward with the fixes.
-
+Who applies the fixes:
+* Per-task review in Hotshot or Cautious: the task's implementation subagent (resume it if possible; otherwise spawn a new one with the findings and the task's diff).
+* Holistic review in Hotshot or Cautious: a new subagent.
+* Flow mode: the parent. Apply review fixes directly, without running the per-edit Flow loop for them.
 
 ## Flow mode
 
-Flow mode is subject to other user preferences (whether to conduct code reviews and when to commit work), 
-but the main difference is in how the code is being written. 
+Flow mode is subject to other user preferences (whether to conduct code reviews and when to commit work),
+but the main difference is in how the code is being written.
 
 For each edit:
 
-1. Make the edit
+1. Make the edit.
 2. Explain what it does - this is not just a copy of code comments; it should describe the purpose of this change in the context of the task at hand. What does it do? Why do we need it? Etc.
 3. Show the diff on screen and the file location.
-4. Ask the user to choose one: 
+4. Ask the user to choose one:
    - Proceed
    - Ask a question about the code
    - Have the agent make a change
    - Hand-off (let the user manually tweak the code)
-5. If the user asks for a change, make it and return to step #2, until the user is ready to move on.
-6. If the user chooses Hand-off, pause edits until the user explicitly returns control, then reread their changes before continuing.
+5. If the user asks a question, answer it and return to step #4.
+6. If the user asks for a change, make it and return to step #2, until the user is ready to move on.
+7. If the user chooses Hand-off, pause edits until the user explicitly returns control, then reread their changes before continuing.
 
-It's important to not overwhelm the user with redundant changes. For mechanical, repetitive changes across one or multiple files, bundle those into one prompt.
+It's important to not overwhelm the user with redundant changes. For mechanical, repetitive changes across one or multiple files, bundle those into one edit.
 For example, a variable/method rename should not invoke the Flow for each change. It should be all or nothing.
 
 ## The steps
 
-Bullet points describe the steps. Whether code reviews and commits happen follows the resolved execution preferences.
+Whether code reviews and commits happen follows the resolved execution preferences.
 
-A task is complete when its acceptance criteria and relevant checks pass and selected review findings are resolved.
+A task is complete when its acceptance criteria and relevant checks pass and selected review findings are resolved. If checks still fail after a reasonable attempt to fix them, stop and ask the user how to proceed, in every mode.
 
-* A subagent works on one sequential task from a plan. If questions or ambiguities arise during implementation, ask the user to resolve them.
-* A new subagent reviews the changes made.
-* In Cautious mode, present the completed task, including any review fixes, and wait for user approval before committing or starting the next task.
-* Commit the task if the commit policy is After each task.
-* When all tasks are done, conduct a holistic code review of the entire work
-  - Resolve selected findings and rerun affected checks.
-  - In Cautious mode, obtain user approval of the final fixes before committing.
-* If the commit policy is After all tasks, commit the completed work. If it is After each task, commit any final review fixes. Never commit when the policy is Never.
+For each task, in plan order:
+1. Implement the task (subagent in Hotshot and Cautious, parent in Flow).
+2. Run relevant checks.
+3. If per-task reviews are enabled, review the task's changes with a new subagent and resolve selected findings.
+4. Take a snapshot.
+5. In Cautious mode, present the completed task, including any review fixes, and wait for user approval. If the user requests changes, apply them, rerun affected checks, retake the snapshot, and present the task again.
+6. If the commit policy is `after_each_task`, commit the task.
 
-Move the plan to `.plans/done` after all tasks, required reviews, fixes, and user approvals are complete.
+After all tasks:
+1. If the holistic review is enabled, review all changes made while executing the plan with a new subagent.
+   - Resolve selected findings and rerun affected checks.
+   - In Cautious mode, obtain user approval of the final fixes before committing.
+2. If the commit policy is `after_all_tasks`, commit the completed work. If it is `after_each_task`, commit any final review fixes. Never commit when the policy is `never`.
+3. If pre-existing changes were stashed, restore them and tell the user about any conflicts.
 
 ## Preference questions
 
 Ask only for values still unresolved after loading `execute.yaml` and applying explicit preferences from the conversation.
 
-1. What mode would they like to work in?
-2. When to commit (choose one)
+1. Which mode to work in (choose one):
+    - Hotshot: no interaction after setup
+    - Cautious: approve each completed task
+    - Flow: work through each edit together
+2. When to commit (choose one):
     - Never
     - After each task, and its review if any
     - After all tasks are done and the final review, if any
 3. When to conduct code reviews (checkboxes):
     - After each task
-    - Review entire work
+    - After all tasks (entire plan)
 
 </what-to-do>
