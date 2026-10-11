@@ -18,7 +18,7 @@ After all tasks are done, optionally conduct a holistic code review.
 
 This skill has three modes, which determine the level of user interaction.
 
-1. One-shot: after preference setup, the changes are done without any user interaction (unless ambiguities must be resolved).
+1. Hotshot: after preference setup, the changes are done without any user interaction (unless code ambiguities must be resolved).
 2. Cautious: the user reviews the changes for each completed task before the next step 
 3. Flow: the user works with the agent on each change
 
@@ -32,7 +32,7 @@ This skill has three modes, which determine the level of user interaction.
 
 | YAML field | Allowed values |
 | --- | --- |
-| `execution.mode` | `one_shot`, `cautious`, `flow` |
+| `execution.mode` | `hotshot`, `cautious`, `flow` |
 | `execution.commit` | `never`, `after_each_task`, `after_all_tasks` |
 | `execution.reviews.after_each_task` | `true`, `false` |
 | `execution.reviews.entire_plan` | `true`, `false` |
@@ -55,7 +55,7 @@ Record the starting state of plan execution and each task, including existing un
 
 What happens after a code review is done depends on the mode:
 
-* ONE-SHOT: Fix all issues.
+* HOTSHOT: Fix all issues.
 * CAUTIOUS or FLOW: Ask the user which findings should be fixed, then address them.
 
 In FLOW mode, the usual Flow Mode during code review fixes does not apply - simply go forward with the fixes.

@@ -1,5 +1,5 @@
 execution:
-  # Allowed: one_shot, cautious, flow
+  # Allowed: hotshot, cautious, flow
   mode: cautious
 
   # Allowed:
