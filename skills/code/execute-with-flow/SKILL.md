@@ -105,29 +105,49 @@ What happens after a code review is done depends on the mode:
 Who applies the fixes:
 * Per-task review in Hotshot or Cautious: the task's implementation subagent (resume it if possible; otherwise spawn a new one with the findings and the task's diff).
 * Holistic review in Hotshot or Cautious: a new subagent.
-* Flow mode: the parent. Apply review fixes directly, without running the per-edit Flow loop for them.
+* Flow mode: the parent, as described under "Flow mode" > "Review fixes".
 
 ## Flow mode
 
 Flow mode is subject to other user preferences (whether to conduct code reviews and when to commit work),
-but the main difference is in how the code is being written.
+but the main difference is in how the code is being written: the user sees, understands, and approves every edit.
 
+### Sizing edits
+- An edit is one coherent change the user can review at a glance: usually one concern, in one file or a few closely related places. A task normally takes several edits; never present a whole multi-file task as one edit.
+- Bundle mechanical, repetitive changes (renames, import updates, moved code) into one edit, even across files. A rename is all or nothing; do not run the loop for each occurrence.
+
+### Making edits
+- Use the file-editing tools (such as Edit and Write), not shell commands, scripts, or `sed`, so the user's interface shows the change. A script is acceptable only for a bundled mechanical edit.
+- Keep edits separate from running commands: never combine an edit with a build or test run in one command. If a quick check confirms the edit (for example, a new test that should fail), run it as a separate command after the edit and report the result at the checkpoint. Run the task's checks after its last edit is approved.
+
+### The checkpoint
+Tool output, including diffs printed by shell commands, may be hidden or collapsed for the user; it does not count as showing them anything. Before asking about an edit, write a visible message in your reply text with:
+1. A heading: `Task N · Edit M — <short title>`.
+2. Locations: each changed file as `path:line`.
+3. What and why: the purpose of the change in the context of the task. What does it do? Why is it needed? Which non-obvious choices did you make? Do not restate the code comments.
+4. The diff, in a fenced `diff` block in the message text. For a bundled mechanical edit, give a summary and a representative excerpt instead, plus the command to see the full diff.
+5. The result of any check run on the edit.
+
+Never ask about an edit unless this message directly precedes the question. This applies to every edit, including the last edit of a task and edits late in a long session.
+
+### The loop
 For each edit:
 
 1. Make the edit.
-2. Explain what it does - this is not just a copy of code comments; it should describe the purpose of this change in the context of the task at hand. What does it do? Why do we need it? Etc.
-3. Show the diff on screen and the file location.
-4. Ask the user to choose one:
+2. Write the checkpoint message.
+3. Ask the user to choose one:
     - Proceed
     - Ask a question about the code
     - Have the agent make a change
     - Hand-off (let the user manually tweak the code)
-5. If the user asks a question, answer it and return to step #4.
-6. If the user asks for a change, make it and return to step #2, until the user is ready to move on.
-7. If the user chooses Hand-off, pause edits until the user explicitly returns control, then reread their changes before continuing.
 
-It's important to not overwhelm the user with redundant changes. For mechanical, repetitive changes across one or multiple files, bundle those into one edit.
-For example, a variable/method rename should not invoke the Flow for each change. It should be all or nothing.
+    If the question tool supports per-option previews (such as `preview` in Claude Code's AskUserQuestion), also put the edit's diff in the Proceed option's preview, trimmed to the most relevant hunks if it is long, so the diff stays visible while the user decides. The preview supplements the checkpoint message; it never replaces it.
+4. If the user asks a question, answer it and return to step 3.
+5. If the user asks for a change, make it and return to step 2, showing the updated diff.
+6. If the user chooses Hand-off, pause edits until the user explicitly returns control, then reread their changes and briefly summarize them before continuing.
+
+### Review fixes
+Apply selected review fixes directly, without the per-edit loop. Afterwards, write one visible summary covering each fixed finding: its number, `path:line` locations, what changed and why, and the diff in a fenced `diff` block.
 
 ## The steps
 
@@ -137,7 +157,7 @@ A task is complete when its acceptance criteria and relevant checks pass and sel
 
 For each task, in plan order:
 1. Implement the task (subagent in Hotshot and Cautious, parent in Flow).
-2. Run relevant checks.
+2. Run relevant checks (in Flow, after the task's last edit is approved).
 3. Take a snapshot.
 4. If per-task reviews are enabled, review the task's changes with a new subagent, resolve selected findings, rerun affected checks, and retake the snapshot.
 5. In Cautious mode, present the completed task, including any review fixes, and wait for user approval. If the user requests changes, apply them, rerun affected checks, retake the snapshot, and present the task again.
