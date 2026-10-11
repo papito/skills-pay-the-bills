@@ -12,7 +12,7 @@ Repository of agent skills, organized by domain:
 
 ### code
 
-- [`execute-with-flow`](skills/code/execute-with-flow/SKILL.md) - Implement an existing plan in hotshot, cautious, or flow mode (subagent per task; the parent implements directly in flow). Load and save preferences in the project's root `execute.yaml` (kept gitignored), prompt for missing values, isolate plan changes from pre-existing uncommitted work, and review and commit according to those preferences. [Example config](skills/code/execute-with-flow/execute.yaml).
+- [`execute-with-flow`](skills/code/execute-with-flow/SKILL.md) - Implement an existing plan in hotshot, cautious, or flow mode (subagent per task; the parent implements directly in flow). Load and save preferences in the project's root `flow.yaml` (kept gitignored), prompt for missing values, isolate plan changes from pre-existing uncommitted work, and review and commit according to those preferences. [Example config](skills/code/execute-with-flow/flow.yaml).
 
 ### maintain
 

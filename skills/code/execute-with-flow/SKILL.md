@@ -28,7 +28,7 @@ After all tasks are done, optionally conduct a holistic code review.
 ## Before starting
 
 1. Resolve execution preferences as described under "Execution preferences".
-2. Make sure `execute.yaml` is ignored by Git: if `git check-ignore -q execute.yaml` fails, add `execute.yaml` to the project's `.gitignore`.
+2. Make sure `flow.yaml` is ignored by Git: if `git check-ignore -q flow.yaml` fails, add `flow.yaml` to the project's `.gitignore`.
 3. If the working tree has uncommitted changes (other than the `.gitignore` update from step 2) and the commit policy is not `never`, ask the user how to handle them:
     - Stash them until the plan is done
     - Commit them first
@@ -37,10 +37,10 @@ After all tasks are done, optionally conduct a holistic code review.
 
 ## Execution preferences
 
-1. Locate `execute.yaml` in the main project directory the user is currently working on: use the Git repository root when inside a repository, otherwise the project's root directory. Load this project file, not the example in the skill folder.
+1. Locate `flow.yaml` in the main project directory the user is currently working on: use the Git repository root when inside a repository, otherwise the project's root directory. Load this project file, not the example in the skill folder.
 2. Read the fields below. If the file is absent, treat all fields as missing. Explicit user preferences from the current conversation override saved values. Treat missing, null, or unsupported values as unresolved; `false` is a valid review preference.
 3. Ask only for unresolved preferences using "Preference questions", and wait for answers. Do not use the example's values as defaults.
-4. Save all resolved preferences to the same project-root `execute.yaml` before implementation starts, creating it if needed. Preserve unrelated YAML keys and existing comments where possible. If the existing YAML cannot be parsed, resolve that problem before updating it.
+4. Save all resolved preferences to the same project-root `flow.yaml` before implementation starts, creating it if needed. Preserve unrelated YAML keys and existing comments where possible. If the existing YAML cannot be parsed, resolve that problem before updating it.
 5. If the user changes preferences later, update this file and use the new values for subsequent work.
 
 | YAML field | Allowed values |
@@ -149,7 +149,7 @@ After all tasks:
 
 ## Preference questions
 
-Ask only for values still unresolved after loading `execute.yaml` and applying explicit preferences from the conversation.
+Ask only for values still unresolved after loading `flow.yaml` and applying explicit preferences from the conversation.
 
 1. Which mode to work in (choose one):
     - Hotshot: no interaction after setup
