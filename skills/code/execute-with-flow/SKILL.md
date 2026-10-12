@@ -16,7 +16,7 @@ This skill has three modes, which determine the level of user interaction.
 
 1. Hotshot: after setup, tasks are done without user interaction, unless ambiguities must be resolved or checks keep failing.
 2. Cautious: the user approves each completed task before the next task starts.
-3. Flow: the user works with the agent on each implementation edit and selects review findings to fix.
+3. Flow: the user works with the agent on each implementation edit and selects review findings to fix. The user can switch to Cautious or Hotshot from the edit menu at any point and continue the run.
 
 The parent agent coordinates user interaction, task sequencing, and commits.
 - In Hotshot and Cautious modes, spawn one implementation subagent per task, using the same model (and effort, if possible). Subagents cannot talk to the user: if questions or ambiguities arise, the subagent stops and returns them to the parent, which asks the user and resumes the subagent with the answers.
@@ -146,6 +146,7 @@ For each edit:
     - Have the agent make a change
     - Discard this edit
     - Hand-off (let the user manually tweak the code)
+    - Switch to Cautious or Hotshot mode and continue
 
     If the question tool supports per-option previews (such as `preview` in Claude Code's AskUserQuestion), also put the edit's diff in the "Accept edit and continue" option's preview, trimmed to the most relevant hunks if it is long, so the diff stays visible while the user decides. The preview supplements the checkpoint message; it never replaces it.
 4. On acceptance, mark the pending edit approved, advance the baseline to the accepted state, and increment the edit number. Start the next edit, or run task checks if implementation is complete.
@@ -153,6 +154,15 @@ For each edit:
 6. If the user asks for a change, revise the pending edit and return to step 2, showing its complete updated diff against the original baseline.
 7. If the user chooses Discard, reread affected files and remove only pending agent changes, preserving pre-existing changes, accepted edits, and user changes. If changes overlap or ownership is unclear, show a checkpoint and ask how to reconcile them before reverting anything. Summarize the result; if user changes remain pending, return to step 2 for acceptance. Otherwise, ask how to continue and reuse the edit number for a replacement.
 8. If the user chooses Hand-off, pause agent edits and commands that modify the project until the user explicitly returns control. Reread their changes, briefly summarize their effect, and return to step 2 for acceptance. Returning control does not approve the edit.
+9. If the user chooses Switch, ask which mode to continue in (Cautious or Hotshot) unless they already named it, then follow "Switching mode mid-run".
+
+### Switching mode mid-run
+Choosing Switch from the edit menu accepts the pending edit: mark it approved and advance the baseline as in step 4 of the loop. Then:
+
+1. Update `execution.mode` in `flow.yaml` to the chosen mode (see "Execution preferences"). Other preferences are unchanged.
+2. Finish the current task directly as the parent, without further checkpoints or edit approvals, then run its checks and take the snapshot.
+3. From that task's review step onward, apply the new mode's rules: in Cautious, ask which findings to fix and present the completed task for approval; in Hotshot, fix all findings and continue without asking. Review fixes for this task are applied by the parent.
+4. From the next task on, spawn implementation subagents as the new mode requires. The edit loop does not run again unless the user explicitly asks to return to Flow mode.
 
 ### Review fixes
 Selecting review findings authorizes the parent to apply their fixes directly, without the per-edit loop or individual edit approvals. Afterwards, write one visible summary covering each fixed finding: its number, `path:line` locations, what changed and why, and the diff in a fenced `diff` block.
@@ -164,7 +174,7 @@ Whether code reviews and commits happen follows the resolved execution preferenc
 A task is complete when its acceptance criteria and relevant checks pass and selected review findings are resolved. If checks still fail after a reasonable attempt to fix them, stop and ask the user how to proceed, in every mode.
 
 For each task, in plan order:
-1. Implement the task (subagent in Hotshot and Cautious, parent in Flow).
+1. Implement the task (subagent in Hotshot and Cautious, parent in Flow or when the mode was switched during the task).
 2. Run relevant checks (in Flow, after the task's last edit is approved).
 3. Take a snapshot.
 4. If per-task reviews are enabled, review the task's changes with a new subagent, resolve selected findings, rerun affected checks, and retake the snapshot.
