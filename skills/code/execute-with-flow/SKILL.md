@@ -28,14 +28,15 @@ After all tasks are done, optionally conduct a holistic code review.
 ## Before starting
 
 1. Resolve execution preferences as described under "Execution preferences".
-2. Make sure `flow.yaml` is ignored by Git: if `git check-ignore -q flow.yaml` fails, add `flow.yaml` to the project's `.gitignore`.
-3. If the working tree has uncommitted changes (other than the `.gitignore` update from step 2) and the commit policy is not `never`, ask the user how to handle them:
+2. If the working tree has uncommitted changes and the commit policy is not `never`, ask the user how to handle them:
     - Stash them until the plan is done
     - Commit them first
     - Leave them in place, and commit only changes made while executing the plan
-4. Take the starting snapshot (see "Snapshots").
+3. Take the starting snapshot (see "Snapshots").
 
 ## Execution preferences
+
+Leave Git ignore configuration for `flow.yaml` to the user.
 
 1. Locate `flow.yaml` in the main project directory the user is currently working on: use the Git repository root when inside a repository, otherwise the project's root directory. Load this project file, not the example in the skill folder.
 2. Read the fields below. If the file is absent, treat all fields as missing. Explicit user preferences from the current conversation override saved values. Treat missing, null, or unsupported values as unresolved; `false` is a valid review preference.
