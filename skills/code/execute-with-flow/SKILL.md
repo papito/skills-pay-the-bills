@@ -45,6 +45,7 @@ Leave ignore configuration for `flow.yaml` to the user.
     - Accepted: keep the confirmed saved values as resolved.
     - Not accepted: discard saved values for applicable fields and treat those fields as unresolved, except values the user stated explicitly in this conversation.
 4. Ask only for unresolved preferences applicable to this run using "Preference questions", and wait for answers. Do not use the example's values or rejected saved values as defaults. Do not ask for confirmation again after collecting answers.
+    - The review skill question depends on the review flags: resolve both flags first, then ask it in a separate round only if at least one flag is `true`. Never include it in the same batch as the review checkboxes.
 5. Save all resolved preferences to the same project-root `flow.yaml` before implementation starts, creating it if needed. Preserve saved values for inapplicable fields unless the user explicitly changes them, along with unrelated YAML keys and existing comments where possible. If the existing YAML cannot be parsed, resolve that problem before updating it.
 6. If the user changes preferences later, update this file and use the new values for subsequent work.
 
@@ -58,7 +59,7 @@ Leave ignore configuration for `flow.yaml` to the user.
 
 `execution.commit` applies only when a VCS is present; its resolved value is the effective commit policy. Without a VCS, explain that commits are unavailable and use `never` as the effective policy for this run. Skip resolving or confirming `execution.commit`; preserve its saved value (or absence) unless the user explicitly changes it. Continue implementation, snapshots, and reviews without initializing a repository. References below to commit policy mean the effective policy for the run.
 
-The review flags are independent; setting both to `false` disables code reviews. `execution.reviews.skill` is needed only when at least one review flag is `true` and a code review skill is available; leave a saved value in place when reviews are disabled.
+The review flags are independent; setting both to `false` disables code reviews. `execution.reviews.skill` is applicable only when at least one review flag is `true` and a code review skill is available. When both flags are `false` (saved, confirmed, or newly chosen), the skill field is inapplicable: do not ask for it, confirm it, or require it, even if it is missing from `flow.yaml`; leave any saved value in place.
 
 During preference resolution, if reviews are enabled but no code review skill is available, warn the user and skip reviews for this run. Do not ask for or require resolution of `execution.reviews.skill`. Preserve the resolved review flags and any saved skill value in `flow.yaml`; leave the skill field absent if it was absent.
 
@@ -193,7 +194,7 @@ Ask only for applicable values still unresolved after loading `flow.yaml`, apply
 3. When to conduct code reviews (checkboxes):
     - After each task
     - After all tasks (entire plan)
-4. Which code review skill to use (choose one; ask only if at least one review is enabled and a code review skill is available):
+4. Which code review skill to use (choose one; ask only after the review flags are resolved, and only if at least one review is enabled and a code review skill is available; skip entirely when no review is selected):
     - List the code review skills available in this session, with `self-review` first when it is available.
 
 </what-to-do>
