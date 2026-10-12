@@ -145,7 +145,7 @@ For each edit:
     - Hand-off (let the user manually tweak the code)
 
     If the question tool supports per-option previews (such as `preview` in Claude Code's AskUserQuestion), also put the edit's diff in the Proceed option's preview, trimmed to the most relevant hunks if it is long, so the diff stays visible while the user decides. The preview supplements the checkpoint message; it never replaces it.
-4. If the user asks a question, answer it and return to step 3.
+4. If the user asks a question, answer it and return to step 2, repeating the checkpoint before asking again.
 5. If the user asks for a change, make it and return to step 2, showing the updated diff.
 6. If the user chooses Hand-off, pause edits until the user explicitly returns control, then reread their changes and briefly summarize them before continuing.
 
