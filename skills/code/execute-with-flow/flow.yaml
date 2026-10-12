@@ -2,6 +2,7 @@ execution:
   # Allowed: hotshot, cautious, flow
   mode: cautious
 
+  # Applies only with a VCS; otherwise commits are skipped for the run.
   # Allowed:
   #   never           — Do not commit.
   #   after_each_task — Commit each approved task and any final review fixes.

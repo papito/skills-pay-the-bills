@@ -27,24 +27,25 @@ After all tasks are done, optionally conduct a holistic code review.
 
 ## Before starting
 
-1. Resolve execution preferences as described under "Execution preferences".
-2. If the working tree has uncommitted changes and the commit policy is not `never`, ask the user how to handle them:
-    - Stash them until the plan is done
+1. Identify the project's version control system (VCS), if any, and the available tools for it. A repository with no commits still counts as a VCS project.
+2. Resolve execution preferences as described under "Execution preferences".
+3. If a VCS is present, the working copy has pre-existing changes, and the effective commit policy is not `never`, ask the user how to handle them. Offer only strategies supported by the available tools:
+    - Temporarily set them aside until the plan is done
     - Commit them first
     - Leave them in place, and commit only changes made while executing the plan
-3. Take the starting snapshot (see "Snapshots").
+4. Take the starting snapshot (see "Snapshots").
 
 ## Execution preferences
 
-Leave Git ignore configuration for `flow.yaml` to the user.
+Leave ignore configuration for `flow.yaml` to the user.
 
-1. Locate `flow.yaml` in the main project directory the user is currently working on: use the Git repository root when inside a repository, otherwise the project's root directory. Load this project file, not the example in the skill folder.
+1. Locate `flow.yaml` in the main project directory the user is currently working on: use the VCS working-copy root when appropriate, otherwise the project's root directory. Load this project file, not the example in the skill folder.
 2. Read the fields below. If the file is absent, treat all fields as missing. Explicit user preferences from the current conversation override saved values. Treat missing, null, or unsupported values as unresolved; `false` is a valid review preference.
-3. If `flow.yaml` supplied any valid values not overridden by the conversation, show the user those saved settings (plus any conversation overrides) and ask whether they are acceptable for this run. Wait for the answer. Skip this step when the file supplied no valid values.
-    - Accepted: keep the saved values as resolved.
-    - Not accepted: discard all saved values and treat every field as unresolved, except values the user stated explicitly in this conversation.
-4. Ask only for unresolved preferences using "Preference questions", and wait for answers. Do not use the example's values or rejected saved values as defaults. Do not ask for confirmation again after collecting answers.
-5. Save all resolved preferences to the same project-root `flow.yaml` before implementation starts, creating it if needed. Preserve unrelated YAML keys and existing comments where possible. If the existing YAML cannot be parsed, resolve that problem before updating it.
+3. If `flow.yaml` supplied any valid values applicable to this run and not overridden by the conversation, show the user those saved settings (plus any applicable conversation overrides) and ask whether they are acceptable for this run. Wait for the answer. Skip this step when the file supplied no applicable valid values.
+    - Accepted: keep the confirmed saved values as resolved.
+    - Not accepted: discard saved values for applicable fields and treat those fields as unresolved, except values the user stated explicitly in this conversation.
+4. Ask only for unresolved preferences applicable to this run using "Preference questions", and wait for answers. Do not use the example's values or rejected saved values as defaults. Do not ask for confirmation again after collecting answers.
+5. Save all resolved preferences to the same project-root `flow.yaml` before implementation starts, creating it if needed. Preserve saved values for inapplicable fields unless the user explicitly changes them, along with unrelated YAML keys and existing comments where possible. If the existing YAML cannot be parsed, resolve that problem before updating it.
 6. If the user changes preferences later, update this file and use the new values for subsequent work.
 
 | YAML field | Allowed values |
@@ -55,37 +56,31 @@ Leave Git ignore configuration for `flow.yaml` to the user.
 | `execution.reviews.entire_plan` | `true`, `false` |
 | `execution.reviews.skill` | Name of a code review skill available in this session |
 
+`execution.commit` applies only when a VCS is present; its resolved value is the effective commit policy. Without a VCS, explain that commits are unavailable and use `never` as the effective policy for this run. Skip resolving or confirming `execution.commit`; preserve its saved value (or absence) unless the user explicitly changes it. Continue implementation, snapshots, and reviews without initializing a repository. References below to commit policy mean the effective policy for the run.
+
 The review flags are independent; setting both to `false` disables code reviews. `execution.reviews.skill` is needed only when at least one review flag is `true` and a code review skill is available; leave a saved value in place when reviews are disabled.
 
 During preference resolution, if reviews are enabled but no code review skill is available, warn the user and skip reviews for this run. Do not ask for or require resolution of `execution.reviews.skill`. Preserve the resolved review flags and any saved skill value in `flow.yaml`; leave the skill field absent if it was absent.
 
 ## Snapshots
 
-Snapshots isolate the changes made while executing the plan from pre-existing uncommitted changes, without touching the working tree or the real index. Take one at the start of the plan, after implementing each task, and again whenever changes are modified afterwards (review fixes, user-requested changes). The latest snapshot replaces the earlier one taken at the same point:
+Snapshots record project file state independently of commits and must work without a repository or an existing revision. Take one at the start of the plan, after implementing each task, and again whenever changes are modified afterwards (review fixes, user-requested changes). The latest snapshot replaces the earlier one taken at the same point.
 
-```sh
-d=$(mktemp -d)
-GIT_INDEX_FILE="$d/index" git read-tree HEAD
-GIT_INDEX_FILE="$d/index" git add -A
-GIT_INDEX_FILE="$d/index" git write-tree   # prints the snapshot tree ID
-rm -rf "$d"
-```
+Use suitable VCS snapshot facilities when available, otherwise keep temporary filesystem copies outside the project. Capture current file contents, including pre-existing edits and untracked files relevant to the plan. Preserve paths, binary contents, and relevant metadata so additions, modifications, and deletions can be compared. Exclude VCS metadata and unrelated generated files. Creating snapshots must preserve working files, existing staging state, and repository history.
 
-- A task's changes: `git diff <snapshot before task> <snapshot after task>`. The snapshot before a task is the previous task's latest snapshot, or the starting snapshot for the first task.
-- All changes made while executing the plan: `git diff <starting snapshot> <latest snapshot>`.
+- A task's changes: compare the snapshot before the task with the snapshot after it. The snapshot before a task is the previous task's latest snapshot, or the starting snapshot for the first task.
+- All changes made while executing the plan: compare the starting snapshot with the latest snapshot.
 
-Use these diffs for review scopes and commits.
+Retain the snapshots needed for task reviews, the whole-plan review, and pending commits until execution is complete. Use their diffs for review scopes and to identify intended commit contents; committing that exact change set is a separate VCS operation.
 
 ## Committing
 
-Commit only changes made while executing the plan, never pre-existing changes. Stage the diff being committed (`<from>` is the snapshot at the last commit, or the starting snapshot if there was none; `<to>` is the latest snapshot):
+Use the project's VCS and the effective commit policy. Plan commits must contain only changes made while executing the plan; pre-existing changes may be committed separately if the user chose that setup option.
 
-```sh
-git diff --binary <from> <to> | git apply --cached
-```
-
-- If the index already contained staged changes before staging, ask the user before committing, because `git commit` would include them.
-- If `git apply` fails, nothing is staged: this happens when a plan change sits next to a pre-existing change in the same file. Apply the diff file by file (`git diff --binary <from> <to> -- <path> | git apply --cached`), and ask the user how to handle the files that do not apply.
+1. Identify pending plan changes by comparing the latest snapshot with the snapshot at the last successful plan commit, or the starting snapshot if there was none. Skip the commit if that diff is empty.
+2. Use the available VCS tools to prepare exactly those changes, preserving unrelated working-copy changes and any existing staging state.
+3. Verify the proposed commit contents before committing. If the tools cannot reliably isolate or verify the intended changes, ask the user how to proceed.
+4. After successfully committing the full intended change set, record its snapshot as the baseline for the next commit. Keep the starting snapshot for the whole-plan review.
 
 The commit message is one short sentence conveying the overall theme of the changes.
 
@@ -154,7 +149,7 @@ Selecting review findings authorizes the parent to apply their fixes directly, w
 
 ## The steps
 
-Whether code reviews and commits happen follows the resolved execution preferences.
+Whether code reviews and commits happen follows the resolved execution preferences and availability rules above.
 
 A task is complete when its acceptance criteria and relevant checks pass and selected review findings are resolved. If checks still fail after a reasonable attempt to fix them, stop and ask the user how to proceed, in every mode.
 
@@ -171,17 +166,17 @@ After all tasks:
     - Resolve selected findings, rerun affected checks, and retake the snapshot.
     - In Cautious mode, obtain user approval of the final fixes before committing.
 2. If the commit policy is `after_all_tasks`, commit the completed work. If it is `after_each_task`, commit any final review fixes. Never commit when the policy is `never`.
-3. If pre-existing changes were stashed, restore them and tell the user about any conflicts.
+3. If pre-existing changes were temporarily set aside, restore them using the corresponding mechanism and tell the user about any conflicts.
 
 ## Preference questions
 
-Ask only for values still unresolved after loading `flow.yaml`, applying explicit preferences from the conversation, and confirming saved settings with the user.
+Ask only for applicable values still unresolved after loading `flow.yaml`, applying explicit preferences from the conversation, and confirming applicable saved settings with the user.
 
 1. Which mode to work in (choose one):
     - Hotshot: no interaction after setup
     - Cautious: approve each completed task
     - Flow: work through each edit together
-2. When to commit (choose one):
+2. When to commit (choose one; ask only when a VCS is present):
     - Never
     - After each task, and its review if any
     - After all tasks are done and the final review, if any

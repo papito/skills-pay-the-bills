@@ -6,6 +6,7 @@
 
 ## Working rules for agents
 - When a skill is updated, added, or removed, update the `README.md` Skills Table of Contents in the same change.
+- Do not update skill description in the TOC unless the skill's fundamental purpose changes.
 - Keep skill instructions concise and action-oriented; preserve existing frontmatter keys (`name`, `description`, and `tools` when present).
 - Treat `Makefile` as the deployment source of truth (it syncs markdown files from `SKILLS_SRC`, default `skills/`).
 - If deployment behavior or defaults change in `Makefile`, update the matching Deployment section in `README.md`.

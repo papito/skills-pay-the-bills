@@ -12,7 +12,7 @@ Repository of agent skills, organized by domain:
 
 ### code
 
-- [`execute-with-flow`](skills/code/execute-with-flow/SKILL.md) - Implement an existing plan in hotshot, cautious, or flow mode (subagent per task; the parent implements directly in flow, presenting each small implementation edit with locations, an explanation, and the diff before asking to proceed, and repeating that checkpoint after answering code questions). In flow, selecting review findings authorizes their fixes without individual edit approvals; the parent summarizes the fixes afterwards. Load and save preferences in the project's root `flow.yaml` (Git ignore configuration is left to the user), confirm saved values with the user at the start of each run (re-collecting all of them if rejected), prompt for missing values, isolate plan changes from pre-existing uncommitted work, and review (with the code review skill chosen in `flow.yaml`) and commit according to those preferences. If no code review skill is available, warn during setup and skip reviews for the run while preserving review preferences. [Example config](skills/code/execute-with-flow/flow.yaml).
+- [`execute-with-flow`](skills/code/execute-with-flow/SKILL.md) - Implement an existing plan in hotshot, cautious, or flow mode.
 
 ### maintain
 
@@ -31,15 +31,6 @@ Repository of agent skills, organized by domain:
 
 - [`editor`](skills/write/editor/SKILL.md) - Critique writing with a rating, specific weaknesses, strengths, and concrete revision suggestions.
 - [`grammar`](skills/write/grammar/SKILL.md) - Find grammar issues, typos, and closely repeated words; list numbered findings with suggested fixes and ask which to apply.
-
-## Deployment
-
-The `Makefile` syncs markdown skills (`*.md`) from `SKILLS_SRC` into local Copilot, Claude, and Codex skill folders.
-Copilot keeps the source directory shape under a namespace. Claude and Codex flatten skills so each skill directory is a direct child of their skills directory, which is where they look for skills; skill directory names must therefore be unique.
-Flat deployments record the skills they deploy in a manifest file. Later deployments remove only skills listed there that no longer exist in `SKILLS_SRC`, and refuse to overwrite a skill directory that was not deployed from this repository.
-Earlier versions deployed Claude skills under `skills-pay-the-bills/` inside the Claude skills directories, where Claude Code does not find them. After switching to the flat layout, delete those old folders manually.
-Every deployment also adds or refreshes a managed `skills` function in `ALIASES_FILE`, preserving existing content. If an older `skills` function exists outside the managed block, the new definition takes precedence when the file is sourced. `deploy-all` updates the function once, including with parallel make.
-The function prints the skills from `SKILLS_SRC`, grouped by domain, with aligned name and description columns. Names come from skill directory names and descriptions from `SKILL.md` frontmatter; the output is captured at deployment time.
 
 ### Prerequisites
 - `make`
