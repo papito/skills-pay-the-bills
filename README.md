@@ -12,7 +12,7 @@ Repository of agent skills, organized by domain:
 
 ### code
 
-- [`execute-with-flow`](skills/code/execute-with-flow/SKILL.md) - Implement an existing plan in hotshot, cautious, or flow mode.
+- [`execute-with-flow`](skills/code/execute-with-flow/SKILL.md) - Implement an existing plan in hotshot, cautious, or flow mode. [Flow workflow](skills/code/execute-with-flow/SKILL.md#flow-mode).
 
 ### maintain
 

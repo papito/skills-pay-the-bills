@@ -111,38 +111,47 @@ Flow mode is subject to other user preferences (whether to conduct code reviews 
 but the main difference is in how the code is being written: the user sees, understands, and approves every edit except selected review fixes (see "Review fixes").
 
 ### Sizing edits
-- An edit is one coherent change the user can review at a glance: usually one concern, in one file or a few closely related places. A task normally takes several edits; never present a whole multi-file task as one edit.
+- An edit is one coherent behavior or change the user can review at a glance. A small implementation change and its focused test may form one edit across files, even if that completes the task. Split unrelated concerns into separate edits.
 - Bundle mechanical, repetitive changes (renames, import updates, moved code) into one edit, even across files. A rename is all or nothing; do not run the loop for each occurrence.
+
+### The pending edit
+- Keep one unapproved implementation edit at a time. Before modifying a file, preserve its current contents and relevant metadata, or record its absence for a new file, as the edit's baseline. This baseline is separate from task and plan snapshots; extend it before a revision first touches another file.
+- Keep the same edit number and baseline through questions, revisions, and hand-offs. Show the complete pending diff against that baseline, including user changes within the edit. Advance the baseline and edit number only after acceptance.
+- Retain enough change history to distinguish pending agent changes from pre-existing changes, accepted edits, and user changes when discarding an edit.
 
 ### Making edits
 - Use the file-editing tools (such as Edit and Write), not shell commands, scripts, or `sed`, so the user's interface shows the change. A script is acceptable only for a bundled mechanical edit.
 - Keep edits separate from running commands: never combine an edit with a build or test run in one command. If a quick check confirms the edit (for example, a new test that should fail), run it as a separate command after the edit and report the result at the checkpoint. Run the task's checks after its last edit is approved.
+- Corrections required by task checks go through the edit loop as new edits; rerun affected checks after acceptance. Fixes covered by selected review findings follow "Review fixes" instead.
 
 ### The checkpoint
 Tool output, including diffs printed by shell commands, may be hidden or collapsed for the user; it does not count as showing them anything. Before asking about an edit, write a visible message in your reply text with:
 1. A heading: `Task N · Edit M — <short title>`.
 2. Locations: each changed file as `path:line`.
-3. What and why: the purpose of the change in the context of the task. What does it do? Why is it needed? Which non-obvious choices did you make? Do not restate the code comments.
-4. The diff, in a fenced `diff` block in the message text. For a bundled mechanical edit, give a summary and a representative excerpt instead, plus the command to see the full diff.
-5. The result of any check run on the edit.
+3. What and why: usually a few sentences explaining the changed behavior, its purpose, and any meaningful tradeoff. Avoid repeating unchanged task context or code comments.
+4. The complete pending diff against the edit's baseline, in a fenced `diff` block in the message text. For a bundled mechanical edit, give a summary and a representative excerpt instead, plus the command to see the full diff.
+5. Check status: passed, failed as expected (explain why), failed unexpectedly, or not run. Report the results of checks that ran.
 
 Never ask about an edit unless this message directly precedes the question. This applies to every edit, including the last edit of a task and edits late in a long session.
 
 ### The loop
 For each edit:
 
-1. Make the edit.
+1. Capture the edit's baseline and make the edit.
 2. Write the checkpoint message.
 3. Ask the user to choose one:
-    - Proceed
+    - Accept edit and continue
     - Ask a question about the code
     - Have the agent make a change
+    - Discard this edit
     - Hand-off (let the user manually tweak the code)
 
-    If the question tool supports per-option previews (such as `preview` in Claude Code's AskUserQuestion), also put the edit's diff in the Proceed option's preview, trimmed to the most relevant hunks if it is long, so the diff stays visible while the user decides. The preview supplements the checkpoint message; it never replaces it.
-4. If the user asks a question, answer it and return to step 2, repeating the checkpoint before asking again.
-5. If the user asks for a change, make it and return to step 2, showing the updated diff.
-6. If the user chooses Hand-off, pause edits until the user explicitly returns control, then reread their changes and briefly summarize them before continuing.
+    If the question tool supports per-option previews (such as `preview` in Claude Code's AskUserQuestion), also put the edit's diff in the "Accept edit and continue" option's preview, trimmed to the most relevant hunks if it is long, so the diff stays visible while the user decides. The preview supplements the checkpoint message; it never replaces it.
+4. On acceptance, mark the pending edit approved, advance the baseline to the accepted state, and increment the edit number. Start the next edit, or run task checks if implementation is complete.
+5. If the user asks a question, answer it and return to step 2, repeating the checkpoint with a concise explanation before asking again.
+6. If the user asks for a change, revise the pending edit and return to step 2, showing its complete updated diff against the original baseline.
+7. If the user chooses Discard, reread affected files and remove only pending agent changes, preserving pre-existing changes, accepted edits, and user changes. If changes overlap or ownership is unclear, show a checkpoint and ask how to reconcile them before reverting anything. Summarize the result; if user changes remain pending, return to step 2 for acceptance. Otherwise, ask how to continue and reuse the edit number for a replacement.
+8. If the user chooses Hand-off, pause agent edits and commands that modify the project until the user explicitly returns control. Reread their changes, briefly summarize their effect, and return to step 2 for acceptance. Returning control does not approve the edit.
 
 ### Review fixes
 Selecting review findings authorizes the parent to apply their fixes directly, without the per-edit loop or individual edit approvals. Afterwards, write one visible summary covering each fixed finding: its number, `path:line` locations, what changed and why, and the diff in a fenced `diff` block.
@@ -159,7 +168,8 @@ For each task, in plan order:
 3. Take a snapshot.
 4. If per-task reviews are enabled, review the task's changes with a new subagent, resolve selected findings, rerun affected checks, and retake the snapshot.
 5. In Cautious mode, present the completed task, including any review fixes, and wait for user approval. If the user requests changes, apply them, rerun affected checks, retake the snapshot, and present the task again.
-6. If the commit policy is `after_each_task`, commit the task as described under "Committing".
+6. In Flow mode, summarize how the acceptance criteria were met and report the final check results, without adding a separate task approval.
+7. If the commit policy is `after_each_task`, commit the task as described under "Committing".
 
 After all tasks:
 1. If the holistic review is enabled, review all changes made while executing the plan with a new subagent.
