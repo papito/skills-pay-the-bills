@@ -16,11 +16,11 @@ This skill has three modes, which determine the level of user interaction.
 
 1. Hotshot: after setup, tasks are done without user interaction, unless ambiguities must be resolved or checks keep failing.
 2. Cautious: the user approves each completed task before the next task starts.
-3. Flow: the user works with the agent on each edit.
+3. Flow: the user works with the agent on each implementation edit and selects review findings to fix.
 
 The parent agent coordinates user interaction, task sequencing, and commits.
 - In Hotshot and Cautious modes, spawn one implementation subagent per task, using the same model (and effort, if possible). Subagents cannot talk to the user: if questions or ambiguities arise, the subagent stops and returns them to the parent, which asks the user and resumes the subagent with the answers.
-- In Flow mode, the parent implements each task directly, because every edit involves the user.
+- In Flow mode, the parent implements each task directly.
 
 After each task, optionally conduct a code review of the work done.
 After all tasks are done, optionally conduct a holistic code review.
@@ -113,7 +113,7 @@ Who applies the fixes:
 ## Flow mode
 
 Flow mode is subject to other user preferences (whether to conduct code reviews and when to commit work),
-but the main difference is in how the code is being written: the user sees, understands, and approves every edit.
+but the main difference is in how the code is being written: the user sees, understands, and approves every edit except selected review fixes (see "Review fixes").
 
 ### Sizing edits
 - An edit is one coherent change the user can review at a glance: usually one concern, in one file or a few closely related places. A task normally takes several edits; never present a whole multi-file task as one edit.
@@ -150,7 +150,7 @@ For each edit:
 6. If the user chooses Hand-off, pause edits until the user explicitly returns control, then reread their changes and briefly summarize them before continuing.
 
 ### Review fixes
-Apply selected review fixes directly, without the per-edit loop. Afterwards, write one visible summary covering each fixed finding: its number, `path:line` locations, what changed and why, and the diff in a fenced `diff` block.
+Selecting review findings authorizes the parent to apply their fixes directly, without the per-edit loop or individual edit approvals. Afterwards, write one visible summary covering each fixed finding: its number, `path:line` locations, what changed and why, and the diff in a fenced `diff` block.
 
 ## The steps
 
