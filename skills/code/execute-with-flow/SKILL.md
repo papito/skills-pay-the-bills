@@ -126,7 +126,7 @@ but the main difference is in how the code is being written: the user sees, unde
 - Corrections required by task checks go through the edit loop as new edits; rerun affected checks after acceptance. Fixes covered by selected review findings follow "Review fixes" instead.
 
 ### The checkpoint
-Tool output, including diffs printed by shell commands, may be hidden or collapsed for the user; it does not count as showing them anything. Before asking about an edit, write a visible message in your reply text with:
+Tool output, including diffs printed by shell commands, may be hidden or collapsed for the user; it does not count as showing them anything. Neither does text placed in a question tool's option labels, descriptions, or previews. Before asking about an edit, write a visible message in your reply text with:
 1. A heading: `Task N · Edit M — <short title>`.
 2. Locations: each changed file as `path:line`.
 3. What and why: usually a few sentences explaining the changed behavior, its purpose, and any meaningful tradeoff. Avoid repeating unchanged task context or code comments.
@@ -148,7 +148,7 @@ For each edit:
     - Hand-off (let the user manually tweak the code)
     - Switch to Cautious or Hotshot mode and continue
 
-    If the question tool supports per-option previews (such as `preview` in Claude Code's AskUserQuestion), also put the edit's diff in the "Accept edit and continue" option's preview, trimmed to the most relevant hunks if it is long, so the diff stays visible while the user decides. The preview supplements the checkpoint message; it never replaces it.
+    The checkpoint message is the only place the diff is shown. Never put code, diff lines, or file contents into the question tool's option labels, descriptions, or previews; keep the options to the short labels above. If the harness has no structured question tool, end the checkpoint message with the numbered option list and wait for the user's reply.
 4. On acceptance, mark the pending edit approved, advance the baseline to the accepted state, and increment the edit number. Start the next edit, or run task checks if implementation is complete.
 5. If the user asks a question, answer it and return to step 2, repeating the checkpoint with a concise explanation before asking again.
 6. If the user asks for a change, revise the pending edit and return to step 2, showing its complete updated diff against the original baseline.
