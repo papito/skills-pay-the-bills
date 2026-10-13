@@ -110,7 +110,6 @@ Flow mode follows the same review and commit preferences; the difference is that
 ### The pending edit
 - Keep one unapproved edit at a time. Before modifying a file, record its contents and metadata (or its absence) as the edit's baseline, separate from task snapshots; extend the baseline before a revision first touches another file.
 - Keep the same edit number and baseline through questions, revisions, and hand-offs; advance both only on acceptance. Always show the complete pending diff against the baseline, including user changes within the edit.
-- Retain enough history to distinguish pending agent changes from pre-existing changes, accepted edits, and user changes.
 
 ### Making edits
 - Use the harness's native file-editing tools (such as `apply_patch`, Edit, or Write) so the user's interface shows the change. If none are available, use the available editing mechanism and show the complete diff at the checkpoint. Otherwise use scripts only for bundled mechanical edits.
@@ -133,20 +132,18 @@ Tool output, collapsed diffs, and question-tool option labels, descriptions, or 
     - Ask a question about the code
     - Annotate the diff
     - Have the agent make a change
-    - Discard this edit
     - Hand-off (let the user manually tweak the code)
     - Switch to Cautious or Hotshot mode and continue
 4. Accept: mark approved, advance the baseline and edit number, then start the next edit or run task checks if implementation is complete.
 5. Question: answer, then return to step 2 with a concise explanation.
 6. Annotate: turn on annotations for this edit, then return to step 2 with the annotated diff.
 7. Change: revise the pending edit, then return to step 2 with the complete updated diff against the original baseline.
-8. Discard: reread affected files and remove only pending agent changes. If changes overlap or ownership is unclear, show a checkpoint and ask how to reconcile before reverting. Summarize; if user changes remain pending, return to step 2, otherwise ask how to continue and reuse the edit number.
-9. Hand-off: pause project-modifying edits and commands until the user explicitly returns control, then reread their changes, summarize their effect, and return to step 2. Returning control does not approve the edit.
-10. Switch: ask which mode (Cautious or Hotshot) unless named, then follow "Switching mode mid-run".
+8. Hand-off: pause project-modifying edits and commands until the user explicitly returns control, then reread their changes, summarize their effect, and return to step 2. Returning control does not approve the edit.
+9. Switch: ask which mode (Cautious or Hotshot) unless named, then follow "Switching mode mid-run".
 
 ### Annotations
 Annotations help the user understand the pending diff. They exist only in the checkpoint message: never write them to files, and keep them out of baselines, snapshots, checks, and commits. Annotating neither changes nor approves the edit.
-- Scope: once requested, annotate every checkpoint of that edit, including after revisions and hand-offs, until it is accepted or nothing remains pending. The next edit starts without annotations.
+- Scope: once requested, annotate every checkpoint of that edit, including after revisions and hand-offs, until it is accepted. The next edit starts without annotations.
 - Format: the annotated diff replaces the plain one, with every diff line unchanged. Put each note directly above the lines it explains, as a line with no `+`, `-`, or space prefix that starts with the file's comment marker (or `#` if it has none) followed by `▸`, for example `# ▸` or `// ▸`. Keep notes to one or two short lines.
 - Annotate what a reader can't see at a glance: non-obvious intent or tradeoffs, invariants and assumptions, edge cases and error paths, interactions with code outside the diff, surprising language or library behavior, and why removed code is safe to remove.
 - Skip trivial or duplicative notes: lines that are clear on their own, restatements of code in prose, imports and boilerplate, and anything already in the checkpoint's "What and why" or in comments inside the diff. Annotate a repeated or parallel pattern (such as a run of `print` calls) once at its first occurrence, if at all. If nothing merits a note, say so rather than padding.
