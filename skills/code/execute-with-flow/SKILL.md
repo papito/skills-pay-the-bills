@@ -22,6 +22,17 @@ The three modes set the level of user interaction:
 
 The parent coordinates user interaction, task sequencing, and commits. Implementation subagents use the same model (and effort, if possible) and cannot talk to the user: when questions or ambiguities arise, the subagent stops and returns them to the parent, which asks the user and resumes it with the answers. "Task's subagent" means resume it if possible, otherwise spawn a new one with the findings and the task's diff. In Flow mode the user can switch to Cautious or Hotshot from the edit menu (see "Switching mode mid-run").
 
+Check delegation availability during setup. If subagents are unavailable or not permitted, explain this once and have the parent perform implementation and fixes under the same mode's interaction rules. For enabled reviews, resolve the fallback under "Code reviews".
+
+## User questions
+
+Use these rules for setup, review selections, task approvals, and edit checkpoints:
+
+- Use an available structured question tool when its permitted uses and supported choices fit the question. Follow the harness's restrictions on tool use, modes, and waiting; do not assume a tool exists from its name or switch harness modes just to enable it.
+- Supply explicit option labels and short descriptions. Respect question and option limits: split independent questions, use a secondary menu, or fall back to numbered text. Keep every choice reachable; do not truncate the edit menu or review findings.
+- When a structured tool does not fit, is unavailable, or fails to collect an answer, present the content, the question, and numbered options in the final message and end the turn for the user's response. Accept option numbers, labels, or an unambiguous free-text answer.
+- For a required choice, a displayed prompt, preselected option, timeout, cancellation, or empty tool response is not an answer or approval. Keep it unresolved; use the text fallback if the tool cannot collect the required response. With an asynchronous question, wait for the actual reply before dependent work.
+
 ## Before starting
 
 1. Identify the project's version control system (VCS), if any, and its available tools. A repository with no commits still counts.
@@ -37,16 +48,25 @@ Preferences live in `flow.yaml` at the root of the project the user is working o
 | --- | --- | --- |
 | `execution.mode` | `hotshot`, `cautious`, `flow` | Which mode (choose one): Hotshot, no interaction after setup; Cautious, approve each completed task; Flow, work through each edit together |
 | `execution.commit` | `never`, `after_each_task`, `after_all_tasks` | When to commit (choose one): never; after each task and its review, if any; after all tasks and the final review, if any |
-| `execution.reviews.after_each_task` | `true`, `false` | When to review (checkboxes): after each task; after all tasks (entire plan) |
-| `execution.reviews.entire_plan` | `true`, `false` | Same checkbox question |
+| `execution.reviews.after_each_task` | `true`, `false` | Review after each task? Yes / No |
+| `execution.reviews.entire_plan` | `true`, `false` | Review the entire plan after all tasks? Yes / No |
 | `execution.reviews.skill` | Name of a code review skill available in this session | Which review skill (choose one): the available code review skills, `self-review` first when available |
 
+When both review flags are unresolved, adapt the question to the available UI:
+
+- Multiple selection: "After each task" and "After the entire plan". Explain that submitting neither disables reviews; distinguish a submitted empty selection from a missing response. If the tool cannot distinguish them, use another presentation.
+- Single selection with room for four options: "No reviews" (`false`, `false`), "After each task" (`true`, `false`), "Entire plan" (`false`, `true`), or "Both" (`true`, `true`), in field order from the table.
+- Otherwise use the two Yes/No questions in the table. If one flag is already resolved, ask only for the other.
+
 Resolution:
-1. Read the file; if absent, treat every field as missing. Missing, null, or unsupported values are unresolved; `false` is a valid review value. Explicit preferences from the current conversation override saved values.
-2. If the file supplied valid, applicable values not overridden by the conversation, show them (with any conversation overrides) and ask whether they are acceptable for this run; wait for the answer. If not accepted, treat those fields as unresolved, except values the user stated explicitly in this conversation.
-3. Ask only for unresolved applicable fields, using the questions in the table, and wait. Never use the example's values or rejected saved values as defaults, and do not ask for confirmation again after collecting answers. Ask the review-skill question in a separate round after both review flags are resolved, never in the same batch as the review checkboxes.
+
+1. Read the file; if absent, treat every field as missing. Missing, null, or unsupported values are unresolved; `false` is a valid review value. Saved values are candidates until accepted for this run. Explicit preferences from the current conversation override saved values.
+2. If the file supplied valid, applicable values not overridden by the conversation, show a compact summary of them and any conversation overrides, marking missing values as unresolved. Defer the review skill to step 3. State disabled reviews explicitly. Offer "Use these settings" or "Change settings" and wait; skip this question if no saved candidates remain in the summary. Using the settings accepts only the values shown. For changes, ask which settings to change unless already specified; keep the other displayed values and reopen only the selected fields. If the user rejects all saved settings, reopen all applicable saved fields. Preserve explicit conversation preferences unless the user changes them.
+3. Ask only for unresolved applicable fields using "User questions" and the preference questions above, and wait. Never use the example's values or rejected saved values as defaults, and do not ask for confirmation again after collecting answers. Ask the review-skill question in a separate round after both review flags are resolved, never in the same batch as the review-timing questions. Offer a retained valid saved review skill for acceptance or replacement in that round; skip the question if the user already chose an available skill in this conversation.
 4. Save all resolved preferences to the same `flow.yaml` before implementation starts, creating it if needed. Preserve values of inapplicable fields, unrelated keys, and comments where possible. If the existing YAML cannot be parsed, resolve that first.
 5. If the user changes preferences later, update the file and use the new values from then on.
+
+Setup is complete only when all applicable preferences are resolved and saved and any required fallback choices are answered. Do not begin implementation before then; Hotshot's lack of interaction starts after setup.
 
 Applicability:
 - `execution.commit` applies only when a VCS is present. Without one, explain that commits are unavailable, use `never` as the effective policy, skip resolving or confirming the field, and continue implementation, snapshots, and reviews without initializing a repository. "Commit policy" below means the effective policy.
@@ -75,7 +95,9 @@ The commit message is one short sentence conveying the overall theme of the chan
 
 ## Code reviews
 
-Each review runs in a new subagent given the exact skill name from `execution.reviews.skill` and the task's diff (per-task) or the whole plan's diff (holistic). Instruct it to return only numbered findings in a table, without asking the user questions or implementing fixes. The parent presents the findings and handles selection and fixes per the mode table. Resolve selected findings before the next task. Skip reviews when no code review skill is available (warn if not already warned) and for tasks dedicated only to documentation. If the selected skill is not available, ask the user to pick another available one and save it to `flow.yaml`.
+Each review runs in a new subagent given the exact skill name from `execution.reviews.skill` and the task's diff (per-task) or the whole plan's diff (holistic). Instruct it to return only numbered findings in a table, without asking the user questions or implementing fixes. The parent presents the findings and handles selection and fixes per the mode table. When there are findings in Cautious or Flow mode, use "User questions" to offer fixing all, selected finding numbers, or none; ask for numbers if selection needs a second round. Resolve selected findings before the next task. Skip reviews when no code review skill is available (warn if not already warned) and for tasks dedicated only to documentation. If the selected skill is not available, ask the user to pick another available one and save it to `flow.yaml`.
+
+If a review would otherwise run but independent subagents are unavailable, ask during setup (or when availability changes) whether the parent should review using the selected skill or reviews should be skipped for this run. Keep saved review flags unchanged for this fallback. Identify parent reviews as such; they are not independent reviews. Apply the same findings and fix-selection rules.
 
 ## Flow mode
 
@@ -91,7 +113,7 @@ Flow mode follows the same review and commit preferences; the difference is that
 - Retain enough history to distinguish pending agent changes from pre-existing changes, accepted edits, and user changes.
 
 ### Making edits
-- Use file-editing tools (Edit, Write), not shell commands or scripts, so the user's interface shows the change; a script is acceptable only for a bundled mechanical edit.
+- Use the harness's native file-editing tools (such as `apply_patch`, Edit, or Write) so the user's interface shows the change. If none are available, use the available editing mechanism and show the complete diff at the checkpoint. Otherwise use scripts only for bundled mechanical edits.
 - Never combine an edit with a build or test run. A quick confirming check (such as a new test that should fail) runs as a separate command after the edit and is reported at the checkpoint. Run the task's checks after its last edit is approved.
 - Corrections required by task checks go through the loop as new edits; rerun affected checks after acceptance. Fixes for selected review findings follow "Review fixes".
 
@@ -106,7 +128,7 @@ Tool output, collapsed diffs, and question-tool option labels, descriptions, or 
 ### The loop
 1. Capture the baseline and make the edit.
 2. Write the checkpoint message.
-3. Ask the user to choose one, keeping options to these labels and never placing code in them; without a structured question tool, end the checkpoint with this numbered list and wait:
+3. Use "User questions" to offer the following actions, keeping these labels for the actions and never placing code in them. If the tool cannot fit every action, use secondary menus or a numbered text menu and wait:
     - Accept edit and continue
     - Ask a question about the code
     - Have the agent make a change
