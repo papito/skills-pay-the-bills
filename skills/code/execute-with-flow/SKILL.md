@@ -122,7 +122,7 @@ Tool output, collapsed diffs, and question-tool option labels, descriptions, or 
 1. Heading: `Task N · Edit M — <short title>`.
 2. Locations: each changed file as `path:line`.
 3. What and why: a few sentences on the changed behavior, its purpose, and any meaningful tradeoff; do not repeat unchanged context or code comments.
-4. The complete pending diff against the baseline in a fenced `diff` block. For a bundled mechanical edit, a summary, a representative excerpt, and the command to see the full diff.
+4. The complete pending diff against the baseline in a fenced `diff` block, annotated if the user asked (see "Annotations"). For a bundled mechanical edit, a summary, a representative excerpt, and the command to see the full diff.
 5. Check status: passed, failed as expected (explain why), failed unexpectedly, or not run, with results of checks that ran.
 
 ### The loop
@@ -131,16 +131,25 @@ Tool output, collapsed diffs, and question-tool option labels, descriptions, or 
 3. Use "User questions" to offer the following actions, keeping these labels for the actions and never placing code in them. If the tool cannot fit every action, use secondary menus or a numbered text menu and wait:
     - Accept edit and continue
     - Ask a question about the code
+    - Annotate the diff
     - Have the agent make a change
     - Discard this edit
     - Hand-off (let the user manually tweak the code)
     - Switch to Cautious or Hotshot mode and continue
 4. Accept: mark approved, advance the baseline and edit number, then start the next edit or run task checks if implementation is complete.
 5. Question: answer, then return to step 2 with a concise explanation.
-6. Change: revise the pending edit, then return to step 2 with the complete updated diff against the original baseline.
-7. Discard: reread affected files and remove only pending agent changes. If changes overlap or ownership is unclear, show a checkpoint and ask how to reconcile before reverting. Summarize; if user changes remain pending, return to step 2, otherwise ask how to continue and reuse the edit number.
-8. Hand-off: pause project-modifying edits and commands until the user explicitly returns control, then reread their changes, summarize their effect, and return to step 2. Returning control does not approve the edit.
-9. Switch: ask which mode (Cautious or Hotshot) unless named, then follow "Switching mode mid-run".
+6. Annotate: turn on annotations for this edit, then return to step 2 with the annotated diff.
+7. Change: revise the pending edit, then return to step 2 with the complete updated diff against the original baseline.
+8. Discard: reread affected files and remove only pending agent changes. If changes overlap or ownership is unclear, show a checkpoint and ask how to reconcile before reverting. Summarize; if user changes remain pending, return to step 2, otherwise ask how to continue and reuse the edit number.
+9. Hand-off: pause project-modifying edits and commands until the user explicitly returns control, then reread their changes, summarize their effect, and return to step 2. Returning control does not approve the edit.
+10. Switch: ask which mode (Cautious or Hotshot) unless named, then follow "Switching mode mid-run".
+
+### Annotations
+Annotations help the user understand the pending diff. They exist only in the checkpoint message: never write them to files, and keep them out of baselines, snapshots, checks, and commits. Annotating neither changes nor approves the edit.
+- Scope: once requested, annotate every checkpoint of that edit, including after revisions and hand-offs, until it is accepted or nothing remains pending. The next edit starts without annotations.
+- Format: the annotated diff replaces the plain one, with every diff line unchanged. Put each note directly above the lines it explains, as a line with no `+`, `-`, or space prefix that starts with the file's comment marker (or `#` if it has none) followed by `▸`, for example `# ▸` or `// ▸`. Keep notes to one or two short lines.
+- Annotate what a reader can't see at a glance: non-obvious intent or tradeoffs, invariants and assumptions, edge cases and error paths, interactions with code outside the diff, surprising language or library behavior, and why removed code is safe to remove.
+- Skip trivial or duplicative notes: lines that are clear on their own, restatements of code in prose, imports and boilerplate, and anything already in the checkpoint's "What and why" or in comments inside the diff. Annotate a repeated or parallel pattern (such as a run of `print` calls) once at its first occurrence, if at all. If nothing merits a note, say so rather than padding.
 
 ### Switching mode mid-run
 Switching accepts the pending edit as in step 4. Then update `execution.mode` in `flow.yaml` (other preferences unchanged), finish the current task directly as the parent without further checkpoints, run its checks, and take the snapshot. From that task's review step onward apply the new mode's rules, with the parent applying this task's review fixes. From the next task on, use subagents as the new mode requires. The loop does not resume unless the user explicitly asks to return to Flow.
